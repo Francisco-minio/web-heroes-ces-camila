@@ -1,0 +1,15 @@
+{
+  "name": "web-superheroes",
+  "version": "1.0.0",
+  "description": "Academia de Superhéroes - Vercel Edition",
+  "main": "index.html",
+  "scripts": {
+    "start": "python -m http.server 8001"
+  },
+  "dependencies": {
+    "@vercel/postgres": "^0.9.0"
+  },
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
+}

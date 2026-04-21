@@ -1,0 +1,36 @@
+{
+  "version": 2,
+  "rewrites": [
+    {
+      "source": "/api/heroes.php/:id/points",
+      "destination": "/api/heroes/:id/points"
+    },
+    {
+      "source": "/api/heroes.php/:id",
+      "destination": "/api/heroes/:id"
+    },
+    {
+      "source": "/api/heroes.php",
+      "destination": "/api/heroes"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        }
+      ]
+    }
+  ]
+}
