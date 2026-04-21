@@ -32,14 +32,15 @@
                 <i class="fas fa-mask"></i> Academia de Superhéroes
             </a>
             <div class="navbar-nav ms-auto">
-                <button class="btn btn-warning btn-sm me-2" onclick="toggleView()" id="toggleViewBtn" style="display: none;">
+                <button class="btn btn-warning btn-sm me-2" onclick="toggleView()" id="toggleViewBtn"
+                    style="display: none;">
                     <i class="fas fa-exchange-alt"></i> Cambiar Vista
                 </button>
                 <button class="btn btn-danger btn-sm me-2" onclick="logout()" id="logoutBtn" style="display: none;">
                     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </button>
                 <span class="navbar-text">
-                    <i class="fas fa-user-shield"></i> 
+                    <i class="fas fa-user-shield"></i>
                     <span id="currentUser">Profesor</span>
                 </span>
             </div>
@@ -57,14 +58,16 @@
                     <form id="authForm">
                         <div class="mb-3">
                             <label class="form-label">Usuario:</label>
-                            <input type="text" class="form-control" id="username" placeholder="Ingresa tu usuario" required>
+                            <input type="text" class="form-control" id="username" placeholder="Ingresa tu usuario"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Contraseña:</label>
-                            <input type="password" class="form-control" id="password" placeholder="Ingresa tu contraseña" required>
+                            <input type="password" class="form-control" id="password"
+                                placeholder="Ingresa tu contraseña" required>
                         </div>
                         <div class="text-center">
-                            <small class="text-muted">Usuario: profesor | Contraseña: heroes2024</small>
+                            <small class="text-muted"></small>
                         </div>
                     </form>
                 </div>
@@ -91,11 +94,13 @@
                     <form id="heroLoginForm">
                         <div class="mb-3">
                             <label class="form-label">Usuario:</label>
-                            <input type="text" class="form-control" id="heroUsername" placeholder="Tu nombre de usuario" required>
+                            <input type="text" class="form-control" id="heroUsername" placeholder="Tu nombre de usuario"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Contraseña:</label>
-                            <input type="password" class="form-control" id="heroPassword" placeholder="Tu contraseña" required>
+                            <input type="password" class="form-control" id="heroPassword" placeholder="Tu contraseña"
+                                required>
                         </div>
                         <div class="text-center">
                             <small class="text-muted">Ingresa tus credenciales de alumno</small>
@@ -123,19 +128,24 @@
                     <div class="card-body">
                         <h5 class="card-title"><i class="fas fa-tachometer-alt"></i> Centro de Control</h5>
                         <div class="list-group">
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white" onclick="showSection('heroes')">
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                                onclick="showSection('heroes')">
                                 <i class="fas fa-users"></i> Gestión de Héroes
                             </button>
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white" onclick="showSection('courses')">
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                                onclick="showSection('courses')">
                                 <i class="fas fa-graduation-cap"></i> Vista por Cursos
                             </button>
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white" onclick="showSection('points')">
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                                onclick="showSection('points')">
                                 <i class="fas fa-star"></i> Asignar Puntos
                             </button>
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white" onclick="showSection('medals')">
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                                onclick="showSection('medals')">
                                 <i class="fas fa-medal"></i> Gestión de Medallas
                             </button>
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white" onclick="showSection('stats')">
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                                onclick="showSection('stats')">
                                 <i class="fas fa-chart-bar"></i> Estadísticas
                             </button>
                         </div>
@@ -198,7 +208,8 @@
                         <!-- Filtros -->
                         <div class="row mb-3">
                             <div class="col-md-4">
-                                <input type="text" class="form-control" placeholder="Buscar por nombre..." id="searchHero">
+                                <input type="text" class="form-control" placeholder="Buscar por nombre..."
+                                    id="searchHero">
                             </div>
                             <div class="col-md-4">
                                 <select class="form-control" id="filterCourse">
@@ -246,10 +257,11 @@
                     </div>
                     <div class="card-body">
                         <div class="row mb-3">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="input-group">
                                     <span class="input-group-text"><i class="fas fa-search"></i></span>
-                                    <input type="text" class="form-control" id="courseSearch" placeholder="Buscar alumno en cualquier curso...">
+                                    <input type="text" class="form-control" id="courseSearch"
+                                        placeholder="Buscar alumno en cualquier curso...">
                                 </div>
                             </div>
                             <div class="col-md-3">
@@ -263,9 +275,14 @@
                                     <option value="6">6° Grado</option>
                                 </select>
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <button class="btn btn-outline-primary w-100" onclick="refreshCourseView()">
                                     <i class="fas fa-sync-alt"></i> Actualizar
+                                </button>
+                            </div>
+                            <div class="col-md-3">
+                                <button class="btn btn-success w-100" onclick="addNewCourse()">
+                                    <i class="fas fa-plus"></i> Agregar Grado
                                 </button>
                             </div>
                         </div>
@@ -299,7 +316,8 @@
                                 <h6>Detalles de Puntos:</h6>
                                 <div class="mb-3">
                                     <label class="form-label">Motivo:</label>
-                                    <input type="text" class="form-control" id="pointsReason" placeholder="Ej: Excelente participación">
+                                    <input type="text" class="form-control" id="pointsReason"
+                                        placeholder="Ej: Excelente participación">
                                 </div>
                                 <div class="mb-3">
                                     <label class="form-label">Cantidad de Puntos:</label>
@@ -359,7 +377,8 @@
                                     <i class="fas fa-award"></i> Entregar Medalla
                                 </button>
 
-                                <button class="btn btn-primary w-100" data-bs-toggle="modal" data-bs-target="#createMedalModal">
+                                <button class="btn btn-primary w-100" data-bs-toggle="modal"
+                                    data-bs-target="#createMedalModal">
                                     <i class="fas fa-plus"></i> Crear Nueva Medalla
                                 </button>
                             </div>
@@ -400,7 +419,8 @@
                         <div class="mb-3">
                             <label class="form-label">Poder Especial:</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="studentPower" placeholder="Tu poder especial...">
+                                <input type="text" class="form-control" id="studentPower"
+                                    placeholder="Tu poder especial...">
                                 <button class="btn btn-primary" type="button" onclick="updateStudentPower()">
                                     <i class="fas fa-save"></i> Guardar
                                 </button>
@@ -533,16 +553,19 @@
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Poder Especial:</label>
-                            <input type="text" class="form-control" id="specialPower" placeholder="Describe tu poder...">
+                            <input type="text" class="form-control" id="specialPower"
+                                placeholder="Describe tu poder...">
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Nombre de Usuario (Login):</label>
-                            <input type="text" class="form-control" id="newHeroUsername" placeholder="Ej: spiderman, batman" required>
+                            <input type="text" class="form-control" id="newHeroUsername"
+                                placeholder="Ej: spiderman, batman" required>
                             <small class="text-muted">Este será el usuario para que el alumno inicie sesión</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Contraseña:</label>
-                            <input type="text" class="form-control" id="newHeroPassword" placeholder="Mínimo 4 caracteres" required>
+                            <input type="text" class="form-control" id="newHeroPassword"
+                                placeholder="Mínimo 4 caracteres" required>
                             <small class="text-muted">Contraseña para el acceso del alumno</small>
                         </div>
                         <div class="mb-3">
@@ -573,16 +596,19 @@
                     <form id="createMedalForm">
                         <div class="mb-3">
                             <label class="form-label">Nombre de la Medalla:</label>
-                            <input type="text" class="form-control" id="medalName" placeholder="Ej: Medalla de Valiente" required>
+                            <input type="text" class="form-control" id="medalName" placeholder="Ej: Medalla de Valiente"
+                                required>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Icono/Emoji:</label>
-                            <input type="text" class="form-control" id="medalIcon" placeholder="Ej: 🏆, 🎯, 🌟" maxlength="2" required>
+                            <input type="text" class="form-control" id="medalIcon" placeholder="Ej: 🏆, 🎯, 🌟"
+                                maxlength="2" required>
                             <small class="text-muted">Usa un emoji o símbolo (máximo 2 caracteres)</small>
                         </div>
                         <div class="mb-3">
                             <label class="form-label">Descripción:</label>
-                            <textarea class="form-control" id="medalDescription" placeholder="Describe qué representa esta medalla..." rows="3" required></textarea>
+                            <textarea class="form-control" id="medalDescription"
+                                placeholder="Describe qué representa esta medalla..." rows="3" required></textarea>
                         </div>
                     </form>
                 </div>

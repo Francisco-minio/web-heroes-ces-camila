@@ -181,6 +181,7 @@ document.addEventListener('DOMContentLoaded', function() {
     populatePointsHistory();
     populateAvatarSelection();
     populateEmojiSelector();
+    populateCourseDropdowns(); // <-- Añadido
     setupEventListeners();
 });
 
@@ -379,6 +380,13 @@ function setupEventListeners() {
             authenticate();
         }
     });
+
+    // Filtros de cursos
+    const courseSearch = document.getElementById('courseSearch');
+    if (courseSearch) courseSearch.addEventListener('input', refreshCourseView);
+    
+    const courseLevelFilter = document.getElementById('courseLevelFilter');
+    if (courseLevelFilter) courseLevelFilter.addEventListener('change', refreshCourseView);
 }
 
 // Inicializar aplicación
@@ -1712,4 +1720,105 @@ function populateMedalsHistory() {
         `;
         container.appendChild(medalCard);
     });
+}
+// --- FUNCIONES DE CURSOS (Añadidas para corregir errores) ---
+
+// Poblar los dropdowns de cursos en toda la app
+function populateCourseDropdowns() {
+    console.log('Poblando dropdowns de cursos...');
+    const courseSelect = document.getElementById('course');
+    const filterCourseSelect = document.getElementById('filterCourse');
+    const medalHeroSelect = document.getElementById('medalHeroSelect');
+    
+    if (courseSelect) {
+        courseSelect.innerHTML = COURSES_CONFIG.getSelectOptions();
+    }
+    
+    if (filterCourseSelect) {
+        filterCourseSelect.innerHTML = COURSES_CONFIG.getFilterOptions();
+    }
+}
+
+// Refrescar la vista de cursos (agrupación de alumnos)
+function refreshCourseView() {
+    const container = document.getElementById('coursesContainer');
+    if (!container) return;
+    
+    const levelFilter = document.getElementById('courseLevelFilter').value;
+    const searchTerm = document.getElementById('courseSearch').value.toLowerCase();
+    
+    let heroesToGroup = heroes;
+    
+    // Filtrar por búsqueda si existe
+    if (searchTerm) {
+        heroesToGroup = heroes.filter(h => 
+            h.realName.toLowerCase().includes(searchTerm) || 
+            h.heroName.toLowerCase().includes(searchTerm)
+        );
+    }
+    
+    // Agrupar
+    const grouped = COURSES_CONFIG.groupHeroesByCourse(heroesToGroup);
+    
+    // Filtrar por nivel si existe
+    if (levelFilter) {
+        const filteredGrouped = {};
+        Object.keys(grouped).forEach(code => {
+            if (grouped[code].course.level === parseInt(levelFilter)) {
+                filteredGrouped[code] = grouped[code];
+            }
+        });
+        container.innerHTML = COURSES_CONFIG.generateCourseView(filteredGrouped);
+    } else {
+        container.innerHTML = COURSES_CONFIG.generateCourseView(grouped);
+    }
+}
+
+// Expandir/Colapsar alumnos en la vista de cursos
+function toggleCourseHeroes(courseCode) {
+    const container = document.querySelector(`.course-heroes[data-course="${courseCode}"]`);
+    if (!container) return;
+    
+    const isExpanded = container.getAttribute('data-expanded') === 'true';
+    const heroesInCourse = heroes.filter(h => h.course === courseCode);
+    
+    if (isExpanded) {
+        container.innerHTML = COURSES_CONFIG.generateHeroesList(heroesInCourse, 3);
+        container.setAttribute('data-expanded', 'false');
+    } else {
+        container.innerHTML = COURSES_CONFIG.generateHeroesList(heroesInCourse);
+        container.setAttribute('data-expanded', 'true');
+    }
+}
+
+// Agregar un nuevo curso dinámicamente
+function addNewCourse() {
+    const name = prompt('Nombre del curso (ej: 1° C):');
+    if (!name) return;
+    
+    const code = prompt('Código único (ej: 1C):').toUpperCase();
+    if (!code) return;
+    
+    // Verificar si ya existe
+    if (COURSES_CONFIG.list.find(c => c.code === code)) {
+        alert('Ese código de curso ya existe.');
+        return;
+    }
+    
+    const levelString = name.match(/(\d+)/);
+    const level = levelString ? parseInt(levelString[1]) : 1;
+    
+    const section = name.split(' ').pop();
+    
+    const newCourse = { code, name, level, section };
+    COURSES_CONFIG.list.push(newCourse);
+    
+    // Recargar dropdowns y vista
+    populateCourseDropdowns();
+    if (document.getElementById('coursesSection').style.display !== 'none') {
+        refreshCourseView();
+    }
+    
+    saveToLocalStorage();
+    showSuccessAnimation(`Curso ${name} agregado correctamente`);
 }
