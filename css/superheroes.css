@@ -1,14 +1,34 @@
 /* Tema de Superhéroes - Academia de Superhéroes */
 
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Bangers&display=swap');
+
 :root {
-    --hero-blue: #0066CC;
-    --hero-red: #DC143C;
-    --hero-yellow: #FFD700;
-    --hero-dark: #1a1a2e;
-    --hero-light: #f0f8ff;
-    --hero-gradient: linear-gradient(135deg, var(--hero-blue), var(--hero-red));
-    --hero-shadow: 0 4px 15px rgba(0, 102, 204, 0.3);
-    --hero-glow: 0 0 20px rgba(255, 215, 0, 0.5);
+    /* Premium Superhero Palette */
+    --hero-blue: #0A84FF;
+    --hero-blue-dark: #0040DD;
+    --hero-red: #FF375F;
+    --hero-red-dark: #D70015;
+    --hero-yellow: #FFD60A;
+    --hero-yellow-dark: #FFCC00;
+    --hero-dark: #1C1C1E;
+    --hero-dark-accent: #2C2C2E;
+    --hero-light: #F2F2F7;
+    
+    /* Gradients */
+    --hero-gradient: linear-gradient(135deg, #0A84FF, #5E5CE6);
+    --hero-gradient-red: linear-gradient(135deg, #FF375F, #FF2D55);
+    --hero-gradient-yellow: linear-gradient(135deg, #FFD60A, #FFCC00);
+    --hero-gradient-dark: linear-gradient(135deg, #1C1C1E, #3A3A3C);
+    
+    /* Glassmorphism */
+    --glass-bg: rgba(255, 255, 255, 0.7);
+    --glass-border: rgba(255, 255, 255, 0.4);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+    
+    /* Shadows & Glows */
+    --hero-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+    --hero-glow: 0 0 20px rgba(10, 132, 255, 0.4);
+    --gold-glow: 0 0 25px rgba(255, 214, 10, 0.5);
 }
 
 * {
@@ -18,138 +38,101 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    min-height: 100vh;
+    font-family: 'Outfit', sans-serif;
+    background-color: var(--hero-light);
+    background-image: 
+        radial-gradient(at 0% 0%, rgba(10, 132, 255, 0.15) 0px, transparent 50%),
+        radial-gradient(at 100% 0%, rgba(255, 55, 95, 0.1) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(255, 214, 10, 0.1) 0px, transparent 50%);
     background-attachment: fixed;
+    color: var(--hero-dark);
+    min-height: 100vh;
 }
 
+h1, h2, h3, h4, .navbar-brand {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+}
 
-/* Navbar */
+.hero-title {
+    font-family: 'Bangers', cursive;
+    letter-spacing: 2px;
+}
 
+/* Navbar Premium */
 .bg-hero {
-    background: var(--hero-gradient) !important;
+    background: rgba(10, 132, 255, 0.8) !important;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--glass-border);
     box-shadow: var(--hero-shadow);
 }
 
 .navbar-brand {
-    font-weight: bold;
-    font-size: 1.5rem;
-    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+    font-size: 1.6rem;
+    background: linear-gradient(to right, #FFF, var(--hero-yellow));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-transform: uppercase;
 }
 
 .bg-hero-secondary {
-    background: linear-gradient(135deg, #4a5568, #2d3748) !important;
+    background: var(--hero-dark-accent) !important;
 }
 
-
-/* Cards con efecto de superhéroe */
-
+/* Cards Premium con Glassmorphism */
 .card {
-    border: none;
-    border-radius: 15px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    background: var(--glass-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border: 1px solid var(--glass-border);
+    border-radius: 20px;
+    box-shadow: var(--glass-shadow);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 35px rgba(0, 0, 0, 0.15);
+    transform: translateY(-8px);
+    box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2);
+    border-color: var(--hero-blue);
+}
+
+.card-header {
+    background: transparent !important;
+    border-bottom: 1px solid var(--glass-border);
+    padding: 1.25rem;
+}
+
+.card-header h5 {
+    margin-bottom: 0;
+    font-weight: 700;
 }
 
 .bg-gradient-hero {
     background: var(--hero-gradient);
-    border-radius: 20px;
-    position: relative;
-    overflow: hidden;
+    color: white;
+    border: none;
 }
 
-.bg-gradient-hero::before {
-    content: '';
-    position: absolute;
-    top: -50%;
-    left: -50%;
-    width: 200%;
-    height: 200%;
-    background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
-    animation: pulse 3s ease-in-out infinite;
+/* Hero Stats Section */
+#statsSection .card {
+    border-left: 6px solid;
 }
+#statsSection .col-md-3:nth-child(1) .card { border-color: var(--hero-blue); }
+#statsSection .col-md-3:nth-child(2) .card { border-color: var(--hero-yellow); }
+#statsSection .col-md-3:nth-child(3) .card { border-color: #32D74B; }
+#statsSection .col-md-3:nth-child(4) .card { border-color: var(--hero-red); }
 
-@keyframes pulse {
-    0%,
-    100% {
-        transform: scale(1);
-        opacity: 0.5;
-    }
-    50% {
-        transform: scale(1.1);
-        opacity: 0.3;
-    }
-}
-
-
-/* Avatar de Superhéroe */
-
-.hero-avatar {
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 4rem;
-    background: linear-gradient(135deg, var(--hero-yellow), #FFA500);
-    border: 5px solid white;
-    box-shadow: var(--hero-glow);
-    margin: 0 auto;
-    animation: float 3s ease-in-out infinite;
-    cursor: pointer;
-    transition: transform 0.3s ease;
-}
-
-.hero-avatar:hover {
-    transform: scale(1.1) rotate(10deg);
-}
-
-@keyframes float {
-    0%,
-    100% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-10px);
-    }
-}
-
-
-/* Botones con efecto de poder */
-
+/* Buttons with Power-Up Effect */
 .btn {
-    border-radius: 25px;
-    font-weight: 600;
+    border-radius: 12px;
+    padding: 10px 24px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 1px;
+    font-size: 0.85rem;
+    letter-spacing: 0.5px;
     transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
-}
-
-.btn::before {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 0;
-    height: 0;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    transform: translate(-50%, -50%);
-    transition: width 0.6s, height 0.6s;
-}
-
-.btn:hover::before {
-    width: 300px;
-    height: 300px;
+    border: none;
 }
 
 .btn-primary {
@@ -183,89 +166,305 @@ body {
     box-shadow: 0 4px 15px rgba(220, 20, 60, 0.3);
 }
 
+/* Avatar de Superhéroe */
+.hero-avatar {
+    width: 140px;
+    height: 140px;
+    border-radius: 30px; /* Squircle style */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 5rem;
+    background: var(--hero-gradient-yellow);
+    border: 4px solid white;
+    box-shadow: var(--gold-glow);
+    margin: 0 auto;
+    animation: float 4s ease-in-out infinite;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
 
-/* Tablas con estilo de superhéroe */
+.hero-avatar:hover {
+    transform: scale(1.1) rotate(5deg);
+    border-color: var(--hero-blue);
+}
 
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+/* Premium Tables */
 .table {
-    background: white;
-    border-radius: 10px;
-    overflow: hidden;
+    background: transparent;
+    border-collapse: separate;
+    border-spacing: 0 10px;
 }
 
 .table thead th {
-    background: var(--hero-gradient);
-    color: white;
+    background: transparent;
+    color: var(--hero-dark);
     border: none;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
+    font-size: 0.75rem;
     letter-spacing: 1px;
+    padding: 15px;
 }
 
 .table tbody tr {
-    transition: background-color 0.3s ease;
+    background: white;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+    border-radius: 12px;
 }
+
+.table tbody tr td {
+    padding: 20px 15px;
+    border: none;
+    vertical-align: middle;
+}
+
+.table tbody tr td:first-child { border-radius: 12px 0 0 12px; }
+.table tbody tr td:last-child { border-radius: 0 12px 12px 0; }
 
 .table tbody tr:hover {
-    background-color: rgba(0, 102, 204, 0.1);
-    transform: scale(1.02);
+    transform: scale(1.01) translateY(-2px);
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    background: #fdfdfd;
 }
 
-
-/* Badges con efecto */
-
+/* Badges Premium */
 .badge {
-    padding: 8px 12px;
-    border-radius: 20px;
-    font-weight: 600;
+    padding: 10px 16px;
+    border-radius: 10px;
+    font-weight: 700;
+    font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
 }
 
+.badge.bg-warning {
+    background: var(--hero-gradient-yellow) !important;
+    color: var(--hero-dark) !important;
+    box-shadow: 0 4px 12px rgba(255, 214, 10, 0.3);
+}
 
-/* Formularios */
+/* Formularios Premium */
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.8);
+    border: 2px solid transparent;
+    border-radius: 12px;
+    padding: 12px 16px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+}
 
-.form-control {
-    border-radius: 10px;
-    border: 2px solid #e0e0e0;
+.form-control:focus, .form-select:focus {
+    background: white;
+    border-color: var(--hero-blue);
+    box-shadow: 0 4px 15px rgba(10, 132, 255, 0.15);
+    transform: translateY(-2px);
+    outline: none;
+}
+
+/* Hall de la Fama / Rankings */
+.ranking-item {
+    background: white;
+    border-radius: 16px;
+    padding: 16px 20px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    border: 1px solid rgba(0,0,0,0.05);
     transition: all 0.3s ease;
 }
 
-.form-control:focus {
+.ranking-item:hover {
+    transform: translateX(10px);
     border-color: var(--hero-blue);
-    box-shadow: 0 0 0 0.2rem rgba(0, 102, 204, 0.25);
-    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(10, 132, 255, 0.1);
 }
 
-
-/* Selector de Avatar */
-
-.avatar-option {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
+.ranking-position {
+    font-family: 'Bangers', cursive;
+    font-size: 1.5rem;
+    width: 45px;
+    height: 45px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
+    border-radius: 12px;
+    margin-right: 20px;
+}
+
+.position-1 { 
+    background: var(--hero-gradient-yellow); 
+    color: var(--hero-dark); 
+    box-shadow: 0 0 15px rgba(255, 214, 10, 0.5);
+}
+.position-2 { background: linear-gradient(135deg, #bdc3c7, #2c3e50); color: white; }
+.position-3 { background: linear-gradient(135deg, #e67e22, #d35400); color: white; }
+.position-default { background: var(--hero-light); color: var(--hero-dark); }
+
+/* Reward Cards */
+.reward-card {
     background: white;
-    border: 3px solid #e0e0e0;
-    cursor: pointer;
+    border-radius: 24px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(0,0,0,0.05);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.reward-card:hover {
+    transform: translateY(-12px);
+    box-shadow: 0 15px 40px rgba(0,0,0,0.1);
+    border-color: var(--hero-yellow);
+}
+
+.reward-icon {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1));
+}
+
+.reward-price {
+    background: var(--hero-dark);
+    color: var(--hero-yellow);
+    padding: 8px 20px;
+    border-radius: 12px;
+    font-weight: 800;
+    display: inline-block;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+/* Special Effects */
+.points-animation {
+    color: var(--hero-yellow) !important;
+    font-family: 'Bangers', cursive;
+    font-size: 3rem !important;
+    -webkit-text-stroke: 2px var(--hero-dark);
+}
+
+.medal {
+    width: 65px;
+    height: 65px;
+    border-radius: 18px;
+    background: var(--hero-gradient-yellow);
+    border: 3px solid white;
+    box-shadow: 0 5px 15px rgba(255, 214, 10, 0.4);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 8px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.medal:hover {
+    transform: scale(1.2) rotate(10deg);
+    z-index: 10;
+}
+
+/* Tab Navigation */
+.nav-tabs {
+    border: none;
+    background: rgba(0,0,0,0.05);
+    padding: 6px;
+    border-radius: 14px;
+    display: inline-flex;
+}
+
+.nav-tabs .nav-item {
+    margin: 0;
+}
+
+.nav-tabs .nav-link {
+    border: none !important;
+    border-radius: 10px !important;
+    padding: 10px 24px;
+    color: var(--hero-dark);
+    font-weight: 700;
     transition: all 0.3s ease;
 }
 
-.avatar-option:hover {
-    border-color: var(--hero-blue);
-    transform: scale(1.1);
-    box-shadow: var(--hero-shadow);
+.nav-tabs .nav-link.active {
+    background: white !important;
+    color: var(--hero-blue) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
-.avatar-option.selected {
-    border-color: var(--hero-yellow);
-    background: var(--hero-light);
-    transform: scale(1.15);
+/* Custom Scrollbar */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--hero-light); }
+::-webkit-scrollbar-thumb { 
+    background: var(--hero-blue); 
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover { background: var(--hero-blue-dark); }
+
+/* Dashboard Sections Transition */
+#statsSection, #heroesSection, #coursesSection, #pointsSection, #medalsSection {
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    opacity: 0;
+    transform: translateY(20px);
+}
+
+/* Utility Styles */
+.user-pill {
+    background: rgba(255, 255, 255, 0.2);
+    padding: 6px 16px;
+    border-radius: 50px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.points-badge {
+    display: inline-block;
+    padding: 15px 30px;
+    background: var(--hero-dark);
+    color: var(--hero-yellow);
+    border-radius: 20px;
     box-shadow: var(--hero-glow);
+    border: 2px solid var(--hero-yellow);
 }
 
+.points-badge span {
+    font-family: 'Bangers', cursive;
+    letter-spacing: 2px;
+}
+
+.current-user-ranking {
+    border: 2px solid var(--hero-blue) !important;
+    background: rgba(10, 132, 255, 0.05) !important;
+    transform: scale(1.02);
+}
+
+.animate-in {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 20px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
 
 /* Emoji Selector */
 
@@ -333,89 +532,6 @@ body {
 
 .mission-icon {
     font-size: 2rem;
-    margin-bottom: 10px;
-}
-
-
-/* Ranking */
-
-.ranking-item {
-    display: flex;
-    align-items: center;
-    padding: 15px;
-    margin-bottom: 10px;
-    background: white;
-    border-radius: 10px;
-    transition: all 0.3s ease;
-}
-
-.ranking-item:hover {
-    transform: translateX(5px);
-    box-shadow: var(--hero-shadow);
-}
-
-.ranking-position {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    margin-right: 15px;
-}
-
-.position-1 {
-    background: linear-gradient(135deg, #FFD700, #FFA500);
-    color: white;
-}
-
-.position-2 {
-    background: linear-gradient(135deg, #C0C0C0, #808080);
-    color: white;
-}
-
-.position-3 {
-    background: linear-gradient(135deg, #CD7F32, #8B4513);
-    color: white;
-}
-
-.position-default {
-    background: var(--hero-blue);
-    color: white;
-}
-
-
-/* Tienda de Recompensas */
-
-.reward-card {
-    background: white;
-    border-radius: 15px;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 20px;
-    transition: all 0.3s ease;
-    border: 2px solid #e0e0e0;
-}
-
-.reward-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--hero-shadow);
-    border-color: var(--hero-blue);
-}
-
-.reward-icon {
-    font-size: 3rem;
-    margin-bottom: 15px;
-}
-
-.reward-price {
-    background: var(--hero-yellow);
-    color: var(--hero-dark);
-    padding: 5px 15px;
-    border-radius: 20px;
-    font-weight: bold;
-    display: inline-block;
     margin-bottom: 10px;
 }
 
@@ -543,19 +659,6 @@ body {
 
 /* Medallas y logros */
 
-.medal {
-    display: inline-block;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, var(--hero-yellow), #FFA500);
-    border: 3px solid white;
-    box-shadow: var(--hero-shadow);
-    margin: 5px;
-    position: relative;
-    animation: medalGlow 2s ease-in-out infinite alternate;
-}
-
 .medal-clickable {
     cursor: pointer;
     pointer-events: auto;
@@ -585,28 +688,4 @@ body {
     100% {
         box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
     }
-}
-
-
-/* Navegación por pestañas */
-
-.nav-tabs .nav-link {
-    border-radius: 10px 10px 0 0;
-    border: none;
-    background: #f8f9fa;
-    color: var(--hero-dark);
-    font-weight: 600;
-    transition: all 0.3s ease;
-}
-
-.nav-tabs .nav-link.active {
-    background: var(--hero-gradient);
-    color: white;
-    border: none;
-}
-
-.nav-tabs .nav-link:hover {
-    background: var(--hero-blue);
-    color: white;
-    transform: translateY(-2px);
 }

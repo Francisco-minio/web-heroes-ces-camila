@@ -19,6 +19,15 @@ let availableMedals = [
     { id: 8, name: 'Arcoíris de Talentos', icon: '🌈', description: 'Versatilidad' }
 ];
 
+let rewards = [
+    { id: 1, name: 'Pegatina Especial', icon: '🎨', points: 50, type: 'physical' },
+    { id: 2, name: 'Lápiz de Héroe', icon: '✏️', points: 75, type: 'physical' },
+    { id: 3, name: 'Certificado de Honor', icon: '📜', points: 150, type: 'physical' },
+    { id: 4, name: 'Ayudante del Profesor', icon: '🤝', points: 100, type: 'privilege' },
+    { id: 5, name: 'Tiempo Extra Recreo', icon: '⏰', points: 80, type: 'privilege' },
+    { id: 6, name: 'Elegir Música', icon: '🎵', points: 120, type: 'privilege' }
+];
+
 let nextMedalId = 9; // Para generar nuevos IDs
 
 // Configuración de API
@@ -495,36 +504,44 @@ function toggleView() {
     }
 }
 
-// Mostrar sección específica del dashboard
+// Mostrar sección específica del dashboard con animación
 function showSection(section) {
-    // Ocultar todas las secciones
-    document.getElementById('statsSection').style.display = 'none';
-    document.getElementById('heroesSection').style.display = 'none';
-    document.getElementById('coursesSection').style.display = 'none';
-    document.getElementById('pointsSection').style.display = 'none';
-    document.getElementById('medalsSection').style.display = 'none';
+    // Ocultar todas las secciones con transición
+    const sections = ['statsSection', 'heroesSection', 'coursesSection', 'pointsSection', 'medalsSection'];
+    sections.forEach(s => {
+        const el = document.getElementById(s);
+        if (el) {
+            el.style.display = 'none';
+            el.classList.remove('animate__animated', 'animate__fadeInUp');
+        }
+    });
 
-    // Mostrar sección seleccionada
+    const targetEl = document.getElementById(`${section}Section`);
+    if (targetEl) {
+        targetEl.style.display = 'block';
+        // Añadir clase de animación (usando CSS transition o simple timeout para reflow)
+        setTimeout(() => {
+            targetEl.style.opacity = '1';
+            targetEl.style.transform = 'translateY(0)';
+        }, 10);
+    }
+
+    // Poblar datos específicos
     switch (section) {
         case 'heroes':
-            document.getElementById('heroesSection').style.display = 'block';
             populateHeroesTable();
             break;
         case 'courses':
-            document.getElementById('coursesSection').style.display = 'block';
             refreshCourseView();
             break;
         case 'points':
-            document.getElementById('pointsSection').style.display = 'block';
             populateHeroesCheckboxes();
             populatePointsHistory();
             break;
         case 'medals':
-            document.getElementById('medalsSection').style.display = 'block';
             populateMedalsSection();
             break;
         case 'stats':
-            document.getElementById('statsSection').style.display = 'block';
             updateStats();
             break;
     }
@@ -532,12 +549,23 @@ function showSection(section) {
 
 // Actualizar estadísticas
 function updateStats() {
-    document.getElementById('totalHeroes').textContent = heroes.length;
+    const totalHeroesEl = document.getElementById('totalHeroes');
+    if (!totalHeroesEl) return;
+
+    totalHeroesEl.textContent = heroes.length;
     document.getElementById('totalPoints').textContent = heroes.reduce((sum, hero) => sum + hero.points, 0);
     document.getElementById('activeMissions').textContent = heroes.reduce((sum, hero) => sum + (hero.missions ? hero.missions.length : 0), 0);
 
-    const topHeroes = [...heroes].sort((a, b) => b.points - a.points).slice(0, 5);
-    document.getElementById('topHeroes').textContent = topHeroes.length;
+    const sortedHeroes = [...heroes].sort((a, b) => b.points - a.points);
+    const topHeroElement = document.getElementById('topHeroes');
+    
+    if (topHeroElement) {
+        if (sortedHeroes.length > 0) {
+            topHeroElement.textContent = sortedHeroes[0].heroName;
+        } else {
+            topHeroElement.textContent = '-';
+        }
+    }
 }
 
 // Poblar tabla de héroes
@@ -1020,6 +1048,9 @@ function updateStudentView() {
 
     // Actualizar selector de emojis
     updateEmojiSelector();
+
+    // Actualizar tienda de recompensas
+    updateRewardsShop();
 }
 
 // Actualizar selector de emojis del estudiante
@@ -1129,13 +1160,19 @@ function updateMissionsHistory() {
     // Mostrar últimas 10 actividades
     allActivities.slice(0, 10).forEach(activity => {
         const missionCard = document.createElement('div');
-        missionCard.className = 'col-md-6';
+        missionCard.className = 'col-md-6 mb-3';
         missionCard.innerHTML = `
-            <div class="mission-card">
-                <div class="mission-icon">${activity.icon}</div>
-                <h6>${activity.description}</h6>
-                <span class="badge bg-success">+${activity.points} puntos</span>
-                <small class="text-muted d-block">${new Date(activity.date).toLocaleDateString()}</small>
+            <div class="card mission-card h-100 border-0 shadow-sm">
+                <div class="card-body d-flex align-items-center">
+                    <div class="mission-icon me-3 h2 mb-0">${activity.icon}</div>
+                    <div class="flex-grow-1">
+                        <h6 class="mb-1 fw-bold">${activity.description}</h6>
+                        <small class="text-muted">${new Date(activity.date).toLocaleDateString()}</small>
+                    </div>
+                    <div class="ms-3">
+                        <span class="badge bg-success py-2">+${activity.points}</span>
+                    </div>
+                </div>
             </div>
         `;
         container.appendChild(missionCard);
@@ -1158,7 +1195,7 @@ function updateRankings() {
             const rankingItem = document.createElement('div');
             rankingItem.className = 'ranking-item';
             if (currentUser && hero.id === currentUser.id) {
-                rankingItem.style.background = 'linear-gradient(135deg, rgba(255,215,0,0.2), rgba(255,165,0,0.2))';
+                rankingItem.classList.add('current-user-ranking');
             }
 
             const positionClass = index === 0 ? 'position-1' :
@@ -1167,13 +1204,13 @@ function updateRankings() {
 
             rankingItem.innerHTML = `
                 <div class="ranking-position ${positionClass}">${index + 1}</div>
-                <div style="font-size: 2rem;">${hero.avatar}</div>
+                <div class="ranking-avatar h2 mb-0 me-3">${hero.avatar}</div>
                 <div class="flex-grow-1">
-                    <strong>${hero.heroName}</strong>
-                    <div class="small text-info"><i class="fas fa-bolt"></i> ${hero.specialPower || 'Sin poder especial'}</div>
+                    <div class="fw-bold mb-0">${hero.heroName}</div>
+                    <div class="small text-muted"><i class="fas fa-bolt text-warning"></i> ${hero.specialPower || 'Poder en desarrollo'}</div>
                 </div>
                 <div class="text-end">
-                    <div class="badge bg-warning text-dark">${hero.points} pts</div>
+                    <div class="badge bg-warning">${hero.points} pts</div>
                 </div>
             `;
             container.appendChild(rankingItem);
@@ -1430,17 +1467,35 @@ function addNewIcon() {
     }
 }
 
-// Animaciones
+// Animaciones Premium
 function showSuccessAnimation(message) {
     const div = document.createElement('div');
-    div.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3';
-    div.style.zIndex = '9999';
-    div.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
+    div.className = 'alert alert-hero-success animate-in';
+    div.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: var(--hero-gradient);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 50px;
+        box-shadow: 0 10px 25px rgba(10, 132, 255, 0.4);
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        pointer-events: none;
+    `;
+    div.innerHTML = `<i class="fas fa-check-circle h4 mb-0"></i> <span>${message}</span>`;
     document.body.appendChild(div);
 
     setTimeout(() => {
-        div.remove();
-    }, 3000);
+        div.style.opacity = '0';
+        div.style.transform = 'translateX(-50%) translateY(-20px)';
+        setTimeout(() => div.remove(), 500);
+    }, 2500);
 }
 
 function showPointsAnimation(points) {
@@ -1795,7 +1850,7 @@ function toggleCourseHeroes(courseCode) {
 function addNewCourse() {
     const name = prompt('Nombre del curso (ej: 1° C):');
     if (!name) return;
-    
+
     const code = prompt('Código único (ej: 1C):').toUpperCase();
     if (!code) return;
     
@@ -1821,4 +1876,75 @@ function addNewCourse() {
     
     saveToLocalStorage();
     showSuccessAnimation(`Curso ${name} agregado correctamente`);
+}
+function updateRewardsShop() {
+    const container = document.getElementById('rewardsShop');
+    if (!container) return;
+
+    container.innerHTML = '';
+
+    rewards.forEach(reward => {
+        const canAfford = currentUser && currentUser.points >= reward.points;
+        const rewardCol = document.createElement('div');
+        rewardCol.className = 'col-md-4 col-sm-6 mb-4';
+        rewardCol.innerHTML = `
+            <div class="reward-card ${!canAfford ? 'opacity-75' : ''}">
+                <div>
+                    <div class="reward-icon">${reward.icon}</div>
+                    <h5 class="fw-bold mb-1">${reward.name}</h5>
+                    <p class="small text-muted mb-3">${reward.type === 'physical' ? 'Objeto Real' : 'Privilegio Especial'}</p>
+                </div>
+                <div>
+                    <div class="reward-price">${reward.points} Pts</div>
+                    <button class="btn ${canAfford ? 'btn-primary' : 'btn-secondary'} w-100" 
+                            onclick="redeemReward(${reward.id})" 
+                            ${!canAfford ? 'disabled' : ''}>
+                        <i class="fas fa-shopping-cart me-2"></i> ${canAfford ? 'Canjear' : 'Faltan ' + (reward.points - currentUser.points) + ' pts'}
+                    </button>
+                </div>
+            </div>
+        `;
+        container.appendChild(rewardCol);
+    });
+}
+
+// Canjear recompensa
+function redeemReward(id) {
+    const reward = rewards.find(r => r.id === id);
+    if (!reward || !currentUser) return;
+
+    if (currentUser.points >= reward.points) {
+        if (confirm(`¿Quieres canjear "${reward.name}" por ${reward.points} puntos?`)) {
+            currentUser.points -= reward.points;
+            
+            // Actualizar en el array global
+            const heroIndex = heroes.findIndex(h => h.id === currentUser.id);
+            if (heroIndex !== -1) {
+                heroes[heroIndex].points = currentUser.points;
+            }
+
+            saveToLocalStorage();
+            updateStudentView();
+            showSuccessAnimation(`¡Has canjeado ${reward.name}!`);
+            showConfetti();
+        }
+    }
+}
+
+function showConfetti() {
+    for (let i = 0; i < 50; i++) {
+        setTimeout(() => {
+            const confetti = document.createElement('div');
+            confetti.className = 'confetti';
+            confetti.style.left = Math.random() * window.innerWidth + 'px';
+            confetti.style.top = '-10px';
+            confetti.style.background = ['#FFD60A', '#FF375F', '#0A84FF', '#32D74B', '#BF5AF2'][Math.floor(Math.random() * 5)];
+            confetti.style.width = (Math.random() * 8 + 4) + 'px';
+            confetti.style.height = (Math.random() * 12 + 6) + 'px';
+            confetti.style.transform = `rotate(${Math.random() * 360}deg)`;
+            document.body.appendChild(confetti);
+
+            setTimeout(() => confetti.remove(), 3000);
+        }, i * 50);
+    }
 }

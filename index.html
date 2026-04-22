@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Academia de Superhéroes - Liga de la Excelencia</title>
+    <meta name="description" content="Academia de Superhéroes - Sistema de gamificación educativa para motivar a los estudiantes a través de misiones, puntos y medallas.">
+    <meta name="keywords" content="educación, gamificación, superhéroes, motivación, aula, gestión escolar">
+    <meta name="author" content="Academia de Superhéroes">
+    <title>Academia de Superhéroes | Liga de la Excelencia</title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Bangers&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="css/superheroes.css">
 
-    <!-- Content Security Policy (CSP) para seguridad en producción -->
-    <!-- Descomentar y ajustar según el hosting utilizado -->
-    <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'; style-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline'; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:;"> -->
-
-    <!-- Configuración segura (debe ir antes que otros scripts) -->
+    <!-- Configuración segura -->
     <script>
         window.ENV = {
             USE_MYSQL: true,
@@ -26,22 +29,22 @@
 
 <body>
     <!-- Navegación Principal -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-hero">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-hero sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#">
+            <a class="navbar-brand hero-title" href="#" id="main-logo">
                 <i class="fas fa-mask"></i> Academia de Superhéroes
             </a>
-            <div class="navbar-nav ms-auto">
-                <button class="btn btn-warning btn-sm me-2" onclick="toggleView()" id="toggleViewBtn"
+            <div class="navbar-nav ms-auto align-items-center">
+                <button class="btn btn-warning btn-sm me-3" onclick="toggleView()" id="toggleViewBtn"
                     style="display: none;">
                     <i class="fas fa-exchange-alt"></i> Cambiar Vista
                 </button>
-                <button class="btn btn-danger btn-sm me-2" onclick="logout()" id="logoutBtn" style="display: none;">
+                <button class="btn btn-danger btn-sm me-3" onclick="logout()" id="logoutBtn" style="display: none;">
                     <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
                 </button>
-                <span class="navbar-text">
+                <span class="user-pill">
                     <i class="fas fa-user-shield"></i>
-                    <span id="currentUser">Profesor</span>
+                    <span id="currentUser">Visitante</span>
                 </span>
             </div>
         </div>
@@ -50,9 +53,9 @@
     <!-- Modal de Autenticación -->
     <div class="modal fade" id="authModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header bg-hero text-white">
-                    <h5 class="modal-title"><i class="fas fa-shield-alt"></i> Acceso de Profesor</h5>
+            <div class="modal-content border-0">
+                <div class="modal-header bg-hero text-white border-0">
+                    <h5 class="modal-title hero-title"><i class="fas fa-shield-alt"></i> Acceso de Profesor</h5>
                 </div>
                 <div class="modal-body">
                     <form id="authForm">
@@ -124,29 +127,31 @@
         <div class="row">
             <!-- Sidebar -->
             <div class="col-md-3">
-                <div class="card bg-hero-secondary text-white">
-                    <div class="card-body">
-                        <h5 class="card-title"><i class="fas fa-tachometer-alt"></i> Centro de Control</h5>
-                        <div class="list-group">
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                <div class="card bg-hero-secondary text-white border-0 overflow-hidden">
+                    <div class="card-body p-0">
+                        <div class="p-4 bg-gradient-dark">
+                            <h5 class="card-title hero-title mb-0"><i class="fas fa-tachometer-alt"></i> Centro de Control</h5>
+                        </div>
+                        <div class="list-group list-group-flush">
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white border-0 py-3 px-4"
                                 onclick="showSection('heroes')">
-                                <i class="fas fa-users"></i> Gestión de Héroes
+                                <i class="fas fa-users me-2"></i> Gestión de Héroes
                             </button>
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white border-0 py-3 px-4"
                                 onclick="showSection('courses')">
-                                <i class="fas fa-graduation-cap"></i> Vista por Cursos
+                                <i class="fas fa-graduation-cap me-2"></i> Vista por Cursos
                             </button>
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white border-0 py-3 px-4"
                                 onclick="showSection('points')">
-                                <i class="fas fa-star"></i> Asignar Puntos
+                                <i class="fas fa-star me-2"></i> Asignar Puntos
                             </button>
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white border-0 py-3 px-4"
                                 onclick="showSection('medals')">
-                                <i class="fas fa-medal"></i> Gestión de Medallas
+                                <i class="fas fa-medal me-2"></i> Gestión de Medallas
                             </button>
-                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white"
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white border-0 py-3 px-4"
                                 onclick="showSection('stats')">
-                                <i class="fas fa-chart-bar"></i> Estadísticas
+                                <i class="fas fa-chart-bar me-2"></i> Estadísticas
                             </button>
                         </div>
                     </div>
@@ -185,20 +190,20 @@
                         </div>
                     </div>
                     <div class="col-md-3">
-                        <div class="card bg-danger text-white">
-                            <div class="card-body text-center">
-                                <i class="fas fa-trophy fa-2x mb-2"></i>
-                                <h3 id="topHeroes">0</h3>
-                                <p>Top 5 Héroes</p>
+                        <div class="card bg-danger text-white border-0 shadow">
+                            <div class="card-body text-center py-4">
+                                <i class="fas fa-trophy fa-2x mb-3 text-warning"></i>
+                                <h4 id="topHeroes" class="hero-title mb-1">-</h4>
+                                <p class="mb-0 small opacity-75">Líder Actual</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Gestión de Héroes -->
-                <div id="heroesSection" class="card" style="display: none;">
-                    <div class="card-header bg-hero text-white">
-                        <h5><i class="fas fa-users"></i> Gestión de Héroes</h5>
+                <div id="heroesSection" class="card border-0" style="display: none;">
+                    <div class="card-header bg-hero text-white border-0">
+                        <h5 class="hero-title mb-0"><i class="fas fa-users"></i> Gestión de Héroes</h5>
                     </div>
                     <div class="card-body">
                         <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#heroModal">
@@ -250,10 +255,10 @@
                 </div>
 
                 <!-- Vista por Cursos -->
-                <div id="coursesSection" class="card" style="display: none;">
-                    <div class="card-header bg-hero text-white">
-                        <h5><i class="fas fa-graduation-cap"></i> Vista por Cursos</h5>
-                        <small class="text-white">Listado de alumnos organizados por curso</small>
+                <div id="coursesSection" class="card border-0" style="display: none;">
+                    <div class="card-header bg-hero text-white border-0">
+                        <h5 class="hero-title mb-0"><i class="fas fa-graduation-cap"></i> Vista por Cursos</h5>
+                        <small class="text-white-50">Listado de alumnos organizados por curso</small>
                     </div>
                     <div class="card-body">
                         <div class="row mb-3">
@@ -300,9 +305,9 @@
                 </div>
 
                 <!-- Asignación de Puntos -->
-                <div id="pointsSection" class="card" style="display: none;">
-                    <div class="card-header bg-hero text-white">
-                        <h5><i class="fas fa-star"></i> Asignar Puntos</h5>
+                <div id="pointsSection" class="card border-0" style="display: none;">
+                    <div class="card-header bg-hero text-white border-0">
+                        <h5 class="hero-title mb-0"><i class="fas fa-star"></i> Asignar Puntos</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -356,9 +361,9 @@
                 </div>
 
                 <!-- Gestión de Medallas -->
-                <div id="medalsSection" class="card" style="display: none;">
-                    <div class="card-header bg-hero text-white">
-                        <h5><i class="fas fa-medal"></i> Gestión de Medallas</h5>
+                <div id="medalsSection" class="card border-0" style="display: none;">
+                    <div class="card-header bg-hero text-white border-0">
+                        <h5 class="hero-title mb-0"><i class="fas fa-medal"></i> Gestión de Medallas</h5>
                     </div>
                     <div class="card-body">
                         <div class="row">
@@ -400,19 +405,19 @@
         <div class="row">
             <!-- Perfil del Alumno -->
             <div class="col-md-4">
-                <div class="card bg-gradient-hero text-white">
-                    <div class="card-body text-center">
-                        <div class="hero-avatar mb-3" id="studentAvatar">
+                <div class="card bg-gradient-hero text-white border-0 shadow-lg">
+                    <div class="card-body text-center py-5">
+                        <div class="hero-avatar mb-4" id="studentAvatar">
                             🦸
                         </div>
-                        <h3 id="studentHeroName">Super Estudiante</h3>
-                        <div class="badge bg-warning text-dark p-2 mb-2">
-                            <i class="fas fa-star"></i> <span id="studentPoints">0</span> Puntos
+                        <h2 id="studentHeroName" class="hero-title mb-3">Super Estudiante</h2>
+                        <div class="points-badge mb-4">
+                            <span class="h1 mb-0" id="studentPoints">0</span>
+                            <small class="d-block">Puntos de Poder</small>
                         </div>
-                        <div class="mb-3">
-                            <small>Racha: </small>
-                            <span class="badge bg-success">
-                                <i class="fas fa-fire"></i> <span id="studentStreak">0</span> días
+                        <div class="mb-4">
+                            <span class="badge bg-success py-2 px-3">
+                                <i class="fas fa-fire"></i> Racha: <span id="studentStreak">0</span> días
                             </span>
                         </div>
 
@@ -456,9 +461,9 @@
 
             <div class="col-md-8">
                 <!-- Historial de Misiones -->
-                <div class="card mb-3">
-                    <div class="card-header bg-hero text-white">
-                        <h6><i class="fas fa-tasks"></i> Últimas Misiones Completadas</h6>
+                <div class="card mb-3 border-0">
+                    <div class="card-header bg-hero text-white border-0">
+                        <h6 class="hero-title mb-0"><i class="fas fa-tasks"></i> Últimas Misiones Completadas</h6>
                     </div>
                     <div class="card-body">
                         <div id="missionsHistory" class="row">
@@ -468,9 +473,9 @@
                 </div>
 
                 <!-- Ranking -->
-                <div class="card mb-3">
-                    <div class="card-header bg-hero text-white">
-                        <h6><i class="fas fa-trophy"></i> Hall de la Fama</h6>
+                <div class="card mb-3 border-0">
+                    <div class="card-header bg-hero text-white border-0">
+                        <h6 class="hero-title mb-0"><i class="fas fa-trophy"></i> Hall de la Fama</h6>
                     </div>
                     <div class="card-body">
                         <ul class="nav nav-tabs">
@@ -505,9 +510,9 @@
                 </div>
 
                 <!-- Tienda de Recompensas -->
-                <div class="card">
-                    <div class="card-header bg-hero text-white">
-                        <h6><i class="fas fa-store"></i> La Armería - Tienda de Recompensas</h6>
+                <div class="card border-0">
+                    <div class="card-header bg-hero text-white border-0">
+                        <h6 class="hero-title mb-0"><i class="fas fa-store"></i> La Armería - Tienda de Recompensas</h6>
                     </div>
                     <div class="card-body">
                         <div id="rewardsShop" class="row">
