@@ -74,17 +74,17 @@ window.safeStorage = safeStorage;
 
 
 
-// API Layer - Abstracción para MySQL o LocalStorage
+// API Layer - Abstracción para Prisma (Vercel) o LocalStorage
 const heroAPI = {
     // GET todos los héroes
     async getAll() {
         if (API_CONFIG.useMySQL) {
             try {
-                const response = await fetch(`${API_CONFIG.baseURL}/heroes.php`);
+                const response = await fetch(`${API_CONFIG.baseURL}/heroes`);
                 if (!response.ok) throw new Error('API error');
                 return await response.json();
             } catch (e) {
-                console.log('MySQL no disponible, usando LocalStorage');
+                console.log('API no disponible, usando LocalStorage');
                 return heroes;
             }
         }
@@ -94,7 +94,7 @@ const heroAPI = {
     // GET un héroe
     async getById(id) {
         if (API_CONFIG.useMySQL) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes.php/${id}`);
+            const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`);
             return await response.json();
         }
         return heroes.find(h => h.id === id);
@@ -103,7 +103,7 @@ const heroAPI = {
     // POST crear héroe
     async create(heroData) {
         if (API_CONFIG.useMySQL) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes.php`, {
+            const response = await fetch(`${API_CONFIG.baseURL}/heroes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(heroData)
@@ -120,7 +120,7 @@ const heroAPI = {
     // PUT actualizar héroe
     async update(id, heroData) {
         if (API_CONFIG.useMySQL) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes.php/${id}`, {
+            const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(heroData)
@@ -139,7 +139,7 @@ const heroAPI = {
     // DELETE eliminar héroe
     async delete(id) {
         if (API_CONFIG.useMySQL) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes.php/${id}`, {
+            const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`, {
                 method: 'DELETE'
             });
             return await response.json();
@@ -153,7 +153,7 @@ const heroAPI = {
     // POST asignar puntos
     async assignPoints(id, points, reason) {
         if (API_CONFIG.useMySQL) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes.php/${id}/points`, {
+            const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}/points`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ points, reason })

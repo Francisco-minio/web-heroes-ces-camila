@@ -1,50 +1,41 @@
-import { sql } from '@vercel/postgres';
+import prisma from '../../lib/prisma';
 
 export default async function handler(req, res) {
   const { method } = req;
   const { id } = req.query;
-
-  const mapHero = (hero) => ({
-    id: hero.id,
-    realName: hero.real_name,
-    heroName: hero.hero_name,
-    course: hero.course_code,
-    specialPower: hero.special_power,
-    username: hero.username,
-    password: hero.password,
-    avatar: hero.avatar,
-    points: hero.points,
-    streak: hero.streak,
-    emojis: hero.emojis || [],
-    medals: hero.medals || [],
-    missions: hero.missions || []
-  });
+  const heroId = parseInt(id);
 
   try {
     switch (method) {
       case 'GET':
-        const { rows } = await sql`SELECT * FROM heroes WHERE id = ${id}`;
-        if (rows[0]) return res.status(200).json(mapHero(rows[0]));
+        const hero = await prisma.hero.findUnique({
+          where: { id: heroId },
+          include: { pointsHistory: true }
+        });
+        if (hero) return res.status(200).json(hero);
         return res.status(404).json({ error: 'Not found' });
 
       case 'PUT':
-        const updateData = req.body;
-        await sql`
-          UPDATE heroes 
-          SET real_name = ${updateData.realName}, 
-              hero_name = ${updateData.heroName}, 
-              course_code = ${updateData.course}, 
-              special_power = ${updateData.specialPower},
-              points = ${updateData.points},
-              streak = ${updateData.streak},
-              emojis = ${JSON.stringify(updateData.emojis || [])},
-              medals = ${JSON.stringify(updateData.medals || [])}
-          WHERE id = ${id}
-        `;
+        const { realName, heroName, course, specialPower, points, streak, emojis, medals } = req.body;
+        await prisma.hero.update({
+          where: { id: heroId },
+          data: {
+            realName,
+            heroName,
+            courseCode: course,
+            specialPower,
+            points,
+            streak,
+            emojis: emojis || [],
+            medals: medals || []
+          }
+        });
         return res.status(200).json({ success: true });
 
       case 'DELETE':
-        await sql`DELETE FROM heroes WHERE id = ${id}`;
+        await prisma.hero.delete({
+          where: { id: heroId }
+        });
         return res.status(200).json({ success: true });
 
       default:

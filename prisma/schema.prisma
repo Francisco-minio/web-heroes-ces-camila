@@ -1,0 +1,55 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Hero {
+  id           Int             @id @default(autoincrement())
+  realName     String          @map("real_name")
+  heroName     String          @unique @map("hero_name")
+  courseCode   String          @map("course_code")
+  specialPower String?         @map("special_power")
+  username     String          @unique
+  password     String
+  avatar       String          @default("🦸")
+  points       Int             @default(0)
+  streak       Int             @default(0)
+  emojis       Json?           @default("[]")
+  medals       Json?           @default("[]")
+  missions     Json?           @default("[]")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @default(now()) @updatedAt @map("updated_at")
+  pointsHistory PointHistory[]
+
+  @@map("heroes")
+}
+
+model PointHistory {
+  id        Int      @id @default(autoincrement())
+  heroId    Int      @map("hero_id")
+  points    Int
+  reason    String
+  date      DateTime
+  createdAt DateTime @default(now()) @map("created_at")
+  hero      Hero     @relation(fields: [heroId], references: [id], onDelete: Cascade)
+
+  @@map("points_history")
+}
+
+model CustomMedal {
+  id          Int      @id @default(autoincrement())
+  name        String
+  icon        String
+  description String?
+  createdBy   String?  @map("created_by")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@map("custom_medals")
+}
