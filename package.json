@@ -5,10 +5,12 @@
   "main": "index.html",
   "scripts": {
     "start": "python -m http.server 8001",
-    "postinstall": "prisma generate"
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
-    "@vercel/postgres": "^0.9.0"
+    "@vercel/postgres": "^0.9.0",
+    "@prisma/client": "latest",
+    "prisma": "latest"
   },
   "devDependencies": {
     "vercel": "^32.0.0"
