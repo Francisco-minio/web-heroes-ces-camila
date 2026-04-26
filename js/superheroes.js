@@ -557,6 +557,9 @@ function showSection(section) {
         case 'medals':
             populateMedalsSection();
             break;
+        case 'cron':
+            populateCronLogs();
+            break;
         case 'quickRayos':
             populateQuickRayos();
             break;
@@ -1967,5 +1970,112 @@ async function confirmQuickAdjust() {
         hero.points = originalPoints;
         populateQuickRayos();
         showErrorAnimation('No se pudo guardar el cambio');
+    }
+}
+
+// --- GESTIÓN DE TAREAS PROGRAMADAS (CRON) ---
+
+// Poblar logs de tareas programadas
+function populateCronLogs() {
+    const tbody = document.getElementById('cronLogsBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+
+    // Extraer todas las entradas de historial que sean automáticas
+    let allAutomatedHistory = [];
+    heroes.forEach(hero => {
+        if (hero.pointsHistory) {
+            hero.pointsHistory.forEach(entry => {
+                // Verificar si la razón contiene "Asignación" y "automática" o "semanal"
+                const isAuto = entry.reason && (
+                    (entry.reason.includes('Asignación') && entry.reason.includes('automática')) || 
+                    entry.reason.includes('Asignación semanal')
+                );
+                
+                if (isAuto) {
+                    allAutomatedHistory.push({
+                        ...entry,
+                        heroName: hero.heroName
+                    });
+                }
+            });
+        }
+    });
+
+    // Agrupar por minuto y motivo (para identificar ejecuciones masivas)
+    const groupedLogs = {};
+    allAutomatedHistory.forEach(entry => {
+        const date = new Date(entry.date);
+        // Usamos año-mes-día hora:minuto como clave de grupo
+        const dateKey = `${date.getFullYear()}-${date.getMonth()}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`;
+        const groupKey = `${dateKey} | ${entry.reason}`;
+        
+        if (!groupedLogs[groupKey]) {
+            groupedLogs[groupKey] = {
+                date: entry.date,
+                reason: entry.reason,
+                points: entry.points,
+                heroes: []
+            };
+        }
+        groupedLogs[groupKey].heroes.push(entry.heroName);
+    });
+
+    // Ordenar por fecha descendente
+    const sortedLogs = Object.values(groupedLogs).sort((a, b) => new Date(b.date) - new Date(a.date));
+
+    if (sortedLogs.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted p-4">No se han registrado ejecuciones automáticas aún</td></tr>';
+        return;
+    }
+
+    sortedLogs.forEach(log => {
+        const row = document.createElement('tr');
+        const dateStr = new Date(log.date).toLocaleString('es-ES', {
+            day: '2-digit',
+            month: '2-digit',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit'
+        });
+
+        row.innerHTML = `
+            <td>${dateStr}</td>
+            <td>${log.reason.includes('semanal') ? '<span class="badge bg-success">Semanal</span>' : '<span class="badge bg-primary">Diaria</span>'}</td>
+            <td class="fw-bold text-warning">${log.points} ⚡</td>
+            <td>${log.heroes.length} héroes</td>
+            <td>
+                <button class="btn btn-sm btn-outline-info" onclick="alert('Héroes afectados:\\n\\n${log.heroes.join(', ')}')">
+                    <i class="fas fa-eye"></i> Ver Detalle
+                </button>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Ejecutar tarea programada manualmente
+async function triggerCronManual() {
+    if (!confirm('¿Deseas ejecutar la asignación de rayos manualmente ahora mismo?')) return;
+
+    try {
+        showSuccessAnimation('Iniciando asignación manual...');
+        const response = await fetch('/api/cron/process-rayos');
+        const data = await response.json();
+
+        if (data.success) {
+            showSuccessAnimation('¡Tarea completada con éxito!');
+            await syncWithBackend();
+            if (document.getElementById('cronSection').style.display !== 'none') {
+                populateCronLogs();
+            }
+            updateStats();
+        } else {
+            throw new Error(data.error || 'Error desconocido');
+        }
+    } catch (e) {
+        console.error('Error al ejecutar cron manual:', e);
+        showErrorAnimation('Error al ejecutar la tarea manual');
     }
 }
