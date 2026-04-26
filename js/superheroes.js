@@ -1878,10 +1878,12 @@ function populateQuickRayos() {
             </td>
             <td>
                 <div class="d-flex justify-content-center gap-2">
-                    <button class="btn btn-sm btn-outline-danger px-3" onclick="quickAdjustRayos(${hero.id}, -5)" title="Quitar 5">-5</button>
-                    <button class="btn btn-sm btn-outline-danger px-3" onclick="quickAdjustRayos(${hero.id}, -1)" title="Quitar 1">-1</button>
-                    <button class="btn btn-sm btn-outline-success px-3" onclick="quickAdjustRayos(${hero.id}, 1)" title="Sumar 1">+1</button>
-                    <button class="btn btn-sm btn-outline-success px-3" onclick="quickAdjustRayos(${hero.id}, 5)" title="Sumar 5">+5</button>
+                    <button class="btn btn-sm btn-outline-danger px-2" onclick="quickAdjustRayos(${hero.id}, -3)" title="Quitar 3">-3</button>
+                    <button class="btn btn-sm btn-outline-danger px-2" onclick="quickAdjustRayos(${hero.id}, -2)" title="Quitar 2">-2</button>
+                    <button class="btn btn-sm btn-outline-danger px-2" onclick="quickAdjustRayos(${hero.id}, -1)" title="Quitar 1">-1</button>
+                    <button class="btn btn-sm btn-outline-success px-2" onclick="quickAdjustRayos(${hero.id}, 1)" title="Sumar 1">+1</button>
+                    <button class="btn btn-sm btn-outline-success px-2" onclick="quickAdjustRayos(${hero.id}, 2)" title="Sumar 2">+2</button>
+                    <button class="btn btn-sm btn-outline-success px-2" onclick="quickAdjustRayos(${hero.id}, 3)" title="Sumar 3">+3</button>
                 </div>
             </td>
         `;
