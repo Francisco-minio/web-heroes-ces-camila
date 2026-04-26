@@ -142,8 +142,12 @@
                                 <i class="fas fa-graduation-cap me-2"></i> Vista por Cursos
                             </button>
                             <button class="list-group-item list-group-item-action bg-hero-secondary text-white border-0 py-3 px-4"
+                                onclick="showSection('quickRayos')">
+                                <i class="fas fa-bolt me-2"></i> Panel de Rayos (Rápido)
+                            </button>
+                            <button class="list-group-item list-group-item-action bg-hero-secondary text-white border-0 py-3 px-4"
                                 onclick="showSection('points')">
-                                <i class="fas fa-star me-2"></i> Asignar Puntos
+                                <i class="fas fa-history me-2"></i> Historial de Rayos
                             </button>
                             <button class="list-group-item list-group-item-action bg-hero-secondary text-white border-0 py-3 px-4"
                                 onclick="showSection('medals')">
@@ -300,6 +304,39 @@
                                 </div>
                                 <p class="mt-2 text-muted">Cargando vista por cursos...</p>
                             </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Panel de Rayos (Rápido) -->
+                <div id="quickRayosSection" class="card border-0" style="display: none;">
+                    <div class="card-header bg-hero text-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="hero-title mb-0"><i class="fas fa-bolt"></i> Panel de Control de Rayos (⚡)</h5>
+                        <div class="d-flex gap-2">
+                            <input type="text" class="form-control form-control-sm" id="quickRayosSearch" placeholder="Buscar héroe..." onkeyup="populateQuickRayos()">
+                            <select class="form-select form-select-sm" id="quickRayosCourseFilter" onchange="populateQuickRayos()" style="width: 150px;">
+                                <!-- Dinámico -->
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info py-2 small mb-3">
+                            <i class="fas fa-info-circle"></i> Haz clic en los botones para sumar o restar rayos instantáneamente.
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-hover align-middle">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th>Héroe</th>
+                                        <th>Curso</th>
+                                        <th class="text-center">Rayos Actuales</th>
+                                        <th class="text-center">Acciones Rápidas</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="quickRayosTableBody">
+                                    <!-- Se llenará dinámicamente -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>

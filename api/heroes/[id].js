@@ -26,8 +26,9 @@ export default async function handler(req, res) {
             specialPower,
             points,
             streak,
-            emojis: emojis || [],
-            medals: medals || []
+            emojis: emojis || undefined,
+            medals: medals || undefined,
+            pointsHistory: req.body.pointsHistory
           }
         });
         return res.status(200).json({ success: true });

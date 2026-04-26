@@ -557,6 +557,9 @@ function showSection(section) {
         case 'medals':
             populateMedalsSection();
             break;
+        case 'quickRayos':
+            populateQuickRayos();
+            break;
         case 'stats':
             updateStats();
             break;
@@ -1824,5 +1827,109 @@ function showConfetti() {
 
             setTimeout(() => confetti.remove(), 3000);
         }, i * 50);
+    }
+}
+
+// --- PANEL DE CONTROL DE RAYOS (RÁPIDO) ---
+
+// Poblar el panel de ajuste rápido de rayos
+function populateQuickRayos() {
+    const tbody = document.getElementById('quickRayosTableBody');
+    if (!tbody) return;
+
+    const searchTerm = document.getElementById('quickRayosSearch').value.toLowerCase();
+    const courseFilter = document.getElementById('quickRayosCourseFilter').value;
+
+    // Poblar el filtro de cursos si está vacío
+    const courseSelect = document.getElementById('quickRayosCourseFilter');
+    if (courseSelect && courseSelect.innerHTML.trim() === '') {
+        courseSelect.innerHTML = COURSES_CONFIG.getFilterOptions();
+    }
+
+    tbody.innerHTML = '';
+
+    const filteredHeroes = heroes.filter(hero => {
+        const matchesSearch = hero.heroName.toLowerCase().includes(searchTerm) || hero.realName.toLowerCase().includes(searchTerm);
+        const matchesCourse = !courseFilter || hero.course === courseFilter;
+        return matchesSearch && matchesCourse;
+    });
+
+    if (filteredHeroes.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="text-center text-muted p-4">No se encontraron héroes</td></tr>';
+        return;
+    }
+
+    filteredHeroes.forEach(hero => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>
+                <div class="d-flex align-items-center">
+                    <span class="fs-3 me-2">${hero.avatar}</span>
+                    <div>
+                        <div class="fw-bold">${hero.heroName}</div>
+                        <div class="small text-muted">${hero.realName}</div>
+                    </div>
+                </div>
+            </td>
+            <td><span class="badge bg-light text-dark">${hero.course || 'N/A'}</span></td>
+            <td class="text-center">
+                <span class="fs-4 fw-bold text-warning">${hero.points}</span>
+                <small class="text-muted">⚡</small>
+            </td>
+            <td>
+                <div class="d-flex justify-content-center gap-2">
+                    <button class="btn btn-sm btn-outline-danger px-3" onclick="quickAdjustRayos(${hero.id}, -5)" title="Quitar 5">-5</button>
+                    <button class="btn btn-sm btn-outline-danger px-3" onclick="quickAdjustRayos(${hero.id}, -1)" title="Quitar 1">-1</button>
+                    <button class="btn btn-sm btn-outline-success px-3" onclick="quickAdjustRayos(${hero.id}, 1)" title="Sumar 1">+1</button>
+                    <button class="btn btn-sm btn-outline-success px-3" onclick="quickAdjustRayos(${hero.id}, 5)" title="Sumar 5">+5</button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Ajustar rayos instantáneamente
+async function quickAdjustRayos(heroId, amount) {
+    const hero = heroes.find(h => h.id === heroId);
+    if (!hero) return;
+
+    // Optimismo: actualizar UI inmediatamente
+    const originalPoints = hero.points;
+    hero.points += amount;
+    populateQuickRayos();
+    
+    try {
+        if (API_CONFIG.useBackend) {
+            await heroAPI.update(heroId, { 
+                points: hero.points,
+                // Registrar en historial también
+                pointsHistory: {
+                    create: {
+                        points: amount,
+                        reason: amount > 0 ? `Ajuste rápido (+${amount} ⚡)` : `Ajuste rápido (${amount} ⚡)`,
+                        date: new Date()
+                    }
+                }
+            });
+            // Sincronizar para asegurar coherencia
+            await syncWithBackend();
+            populateQuickRayos();
+            updateStats();
+        } else {
+            saveToLocalStorage();
+            updateStats();
+        }
+        
+        if (amount > 0 && typeof showPointsAnimation === 'function') {
+            showPointsAnimation(amount);
+        }
+        
+    } catch (e) {
+        console.error('Error al ajustar rayos:', e);
+        // Revertir si falló
+        hero.points = originalPoints;
+        populateQuickRayos();
+        showErrorAnimation('No se pudo guardar el cambio');
     }
 }
