@@ -711,119 +711,6 @@ function populateIconsLibrary() {
     populateMedalsHistory();
 }
 
-// Entregar medalla
-function awardMedal() {
-    const heroId = parseInt(document.getElementById('medalHeroSelect').value);
-    const selectedMedalEl = document.querySelector('.medal-option[style*="border-color: rgb(255, 215, 0)"]');
-
-    if (!heroId) {
-        alert('Por favor selecciona un héroe');
-        return;
-    }
-
-    if (!selectedMedalEl) {
-        alert('Por favor selecciona una medalla');
-        return;
-    }
-
-    const medalId = parseInt(selectedMedalEl.dataset.medalId);
-    const medal = availableMedals.find(m => m.id === medalId);
-    const hero = heroes.find(h => h.id === heroId);
-
-    if (!medal || !hero) return;
-
-    // Agregar medalla al héroe
-    if (!hero.medals) hero.medals = [];
-
-    // Verificar si ya tiene esta medalla
-    const hasMedal = hero.medals.some(m => m.id === medalId);
-    if (hasMedal) {
-        alert('Este héroe ya tiene esta medalla');
-        return;
-    }
-
-    hero.medals.push({
-        ...medal,
-        date: new Date()
-    });
-
-    saveToLocalStorage();
-    populateMedalsSection();
-    updateStudentView(); // Actualizar si estamos viendo este héroe
-
-    showSuccessAnimation(`¡${medal.name} entregada a ${hero.heroName}!`);
-
-    // Limpiar selección
-    document.getElementById('medalHeroSelect').value = '';
-    document.querySelectorAll('.medal-option').forEach(el => {
-        el.style.borderColor = 'transparent';
-    });
-}
-
-// Quitar medalla
-function removeMedal(heroId, medalIndex) {
-    if (!confirm('¿Estás seguro de que quieres quitar esta medalla?')) return;
-
-    const hero = heroes.find(h => h.id === heroId);
-    if (!hero || !hero.medals) return;
-
-    hero.medals.splice(medalIndex, 1);
-
-    saveToLocalStorage();
-    populateMedalsSection();
-    updateStudentView();
-
-    showSuccessAnimation('Medalla quitada exitosamente');
-}
-
-// Poblar historial de medallas
-function populateMedalsHistory() {
-    const container = document.getElementById('medalsHistory');
-    container.innerHTML = '';
-
-    let allMedals = [];
-
-    heroes.forEach(hero => {
-        if (hero.medals) {
-            hero.medals.forEach((medal, index) => {
-                allMedals.push({
-                    hero: hero,
-                    medal: medal,
-                    medalIndex: index
-                });
-            });
-        }
-    });
-
-    // Ordenar por fecha (más reciente primero)
-    allMedals.sort((a, b) => new Date(b.medal.date) - new Date(a.medal.date));
-
-    if (allMedals.length === 0) {
-        container.innerHTML = '<p class="text-muted">Aún no se han entregado medallas</p>';
-        return;
-    }
-
-    allMedals.forEach(item => {
-        const medalCard = document.createElement('div');
-        medalCard.className = 'card mb-2';
-        medalCard.innerHTML = `
-            <div class="card-body p-2">
-                <div class="d-flex align-items-center">
-                    <div style="font-size: 1.5rem; margin-right: 10px;">${item.medal.icon}</div>
-                    <div class="flex-grow-1">
-                        <strong>${item.medal.name}</strong>
-                        <div class="text-muted small">${item.hero.heroName} - ${new Date(item.medal.date).toLocaleDateString()}</div>
-                    </div>
-                    <button class="btn btn-sm btn-danger" onclick="removeMedal(${item.hero.id}, ${item.medalIndex})">
-                        <i class="fas fa-trash"></i>
-                    </button>
-                </div>
-            </div>
-        `;
-        container.appendChild(medalCard);
-    });
-}
-
 // Guardar héroe (nuevo o actualizado)
 async function saveHero() {
     const realName = document.getElementById('realName').value;
@@ -848,14 +735,21 @@ async function saveHero() {
         return;
     }
 
+    // Obtener datos actuales si estamos editando
+    const existingHero = isEditing ? heroes.find(h => h.id === window.editingHeroId) : null;
+
     const heroData = {
         realName,
         heroName,
         course,
         specialPower,
-        username: heroUsername,
-        password: heroPassword,
-        avatar: selectedAvatar ? selectedAvatar.innerHTML : (isEditing ? undefined : '🦸')
+        username: heroUsername || (existingHero ? existingHero.username : undefined),
+        password: heroPassword || (existingHero ? existingHero.password : undefined),
+        avatar: selectedAvatar ? selectedAvatar.innerHTML : (existingHero ? existingHero.avatar : '🦸'),
+        medals: existingHero ? existingHero.medals : [],
+        emojis: existingHero ? existingHero.emojis : [],
+        points: existingHero ? existingHero.points : 0,
+        streak: existingHero ? existingHero.streak : 0
     };
 
     try {
@@ -1634,7 +1528,7 @@ function populateMedalsSection() {
 }
 
 // Entregar medalla
-function awardMedal() {
+async function awardMedal() {
     const heroId = parseInt(document.getElementById('medalHeroSelect').value);
     const selectedMedalEl = document.querySelector('.medal-option.selected-medal');
 
@@ -1664,47 +1558,57 @@ function awardMedal() {
         return;
     }
 
-    hero.medals.push({
-        ...medal,
-        date: new Date()
-    });
+    const newMedals = [
+        ...hero.medals,
+        { ...medal, date: new Date() }
+    ];
 
-    saveToLocalStorage();
-    populateMedalsSection();
+    try {
+        if (API_CONFIG.useBackend) {
+            await heroAPI.update(heroId, { medals: newMedals });
+        }
+        
+        // Sincronizar y actualizar UI
+        await syncWithBackend();
+        populateMedalsSection();
 
-    // Actualizar vista del estudiante si es el héroe actual
-    if (currentUser && currentUser.id === heroId) {
-        updateStudentView();
+        showSuccessAnimation(`¡${medal.name} entregada a ${hero.heroName}!`);
+
+        // Limpiar selección
+        document.getElementById('medalHeroSelect').value = '';
+        document.querySelectorAll('.medal-option').forEach(el => {
+            el.classList.remove('selected-medal');
+            el.style.borderColor = 'transparent';
+        });
+    } catch (e) {
+        console.error('Error al entregar medalla:', e);
+        showErrorAnimation('No se pudo entregar la medalla en el servidor');
     }
-
-    showSuccessAnimation(`¡${medal.name} entregada a ${hero.heroName}!`);
-
-    // Limpiar selección
-    document.getElementById('medalHeroSelect').value = '';
-    document.querySelectorAll('.medal-option').forEach(el => {
-        el.classList.remove('selected-medal');
-        el.style.borderColor = 'transparent';
-    });
 }
 
 // Quitar medalla
-function removeMedal(heroId, medalIndex) {
+async function removeMedal(heroId, medalIndex) {
     if (!confirm('¿Estás seguro de que quieres quitar esta medalla?')) return;
 
     const hero = heroes.find(h => h.id === heroId);
     if (!hero || !hero.medals) return;
 
-    hero.medals.splice(medalIndex, 1);
+    const newMedals = [...hero.medals];
+    newMedals.splice(medalIndex, 1);
 
-    saveToLocalStorage();
-    populateMedalsSection();
+    try {
+        if (API_CONFIG.useBackend) {
+            await heroAPI.update(heroId, { medals: newMedals });
+        }
+        
+        await syncWithBackend();
+        populateMedalsSection();
 
-    // Actualizar vista del estudiante si es el héroe actual
-    if (currentUser && currentUser.id === heroId) {
-        updateStudentView();
+        showSuccessAnimation('Medalla quitada exitosamente');
+    } catch (e) {
+        console.error('Error al quitar medalla:', e);
+        showErrorAnimation('No se pudo quitar la medalla en el servidor');
     }
-
-    showSuccessAnimation('Medalla quitada exitosamente');
 }
 
 // Poblar historial de medallas
