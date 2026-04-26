@@ -194,8 +194,13 @@ async function syncWithBackend() {
         try {
             console.log('Sincronizando con el backend...');
             const backendHeroes = await heroAPI.getAll();
-            if (backendHeroes && Array.isArray(backendHeroes) && backendHeroes.length > 0) {
-                heroes = backendHeroes;
+            if (backendHeroes && Array.isArray(backendHeroes)) {
+                // Normalizar datos (Prisma usa courseCode, el frontend espera course)
+                heroes = backendHeroes.map(h => ({
+                    ...h,
+                    course: h.courseCode || h.course
+                }));
+                
                 saveToLocalStorage(); // Guardar copia local por si acaso
                 console.log('Sincronización exitosa. Héroes cargados:', heroes.length);
             }
