@@ -662,6 +662,29 @@
         </div>
     </div>
 
+    <!-- Modal Razón de Rayos Rápido -->
+    <div class="modal fade" id="quickRayosReasonModal" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-dark">
+                    <h5 class="modal-title hero-title"><i class="fas fa-comment-alt"></i> Motivo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label small fw-bold">¿Por qué este cambio? (Opcional):</label>
+                        <input type="text" class="form-control" id="quickRayosReasonInput" placeholder="Ej: Excelente trabajo">
+                    </div>
+                    <div id="quickRayosAmountSummary" class="text-center h4 fw-bold text-warning mb-0"></div>
+                </div>
+                <div class="modal-footer p-2">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="confirmQuickAdjust()">Confirmar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
 </body>
 
 </html>

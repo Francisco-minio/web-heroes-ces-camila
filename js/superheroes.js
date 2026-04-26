@@ -1889,10 +1889,44 @@ function populateQuickRayos() {
     });
 }
 
-// Ajustar rayos instantáneamente
-async function quickAdjustRayos(heroId, amount) {
+let pendingQuickAdjust = null;
+
+// Ajustar rayos (ahora abre un modal para pedir motivo)
+function quickAdjustRayos(heroId, amount) {
     const hero = heroes.find(h => h.id === heroId);
     if (!hero) return;
+
+    pendingQuickAdjust = { heroId, amount };
+    
+    // Mostrar resumen en el modal
+    const summaryEl = document.getElementById('quickRayosAmountSummary');
+    if (summaryEl) {
+        summaryEl.innerHTML = `${amount > 0 ? '+' : ''}${amount} ⚡ para ${hero.heroName}`;
+        summaryEl.className = amount > 0 ? 'text-center h4 fw-bold text-success mb-0' : 'text-center h4 fw-bold text-danger mb-0';
+    }
+    
+    // Limpiar input anterior
+    document.getElementById('quickRayosReasonInput').value = '';
+    
+    // Mostrar modal
+    const modal = new bootstrap.Modal(document.getElementById('quickRayosReasonModal'));
+    modal.show();
+}
+
+// Confirmar ajuste tras ingresar motivo
+async function confirmQuickAdjust() {
+    if (!pendingQuickAdjust) return;
+    
+    const { heroId, amount } = pendingQuickAdjust;
+    const reason = document.getElementById('quickRayosReasonInput').value || (amount > 0 ? `Ajuste rápido (+${amount} ⚡)` : `Ajuste rápido (${amount} ⚡)`);
+    const hero = heroes.find(h => h.id === heroId);
+    
+    if (!hero) return;
+
+    // Cerrar modal
+    const modalEl = document.getElementById('quickRayosReasonModal');
+    const modal = bootstrap.Modal.getInstance(modalEl);
+    if (modal) modal.hide();
 
     // Optimismo: actualizar UI inmediatamente
     const originalPoints = hero.points;
@@ -1903,11 +1937,10 @@ async function quickAdjustRayos(heroId, amount) {
         if (API_CONFIG.useBackend) {
             await heroAPI.update(heroId, { 
                 points: hero.points,
-                // Registrar en historial también
                 pointsHistory: {
                     create: {
                         points: amount,
-                        reason: amount > 0 ? `Ajuste rápido (+${amount} ⚡)` : `Ajuste rápido (${amount} ⚡)`,
+                        reason: reason,
                         date: new Date()
                     }
                 }
@@ -1925,6 +1958,7 @@ async function quickAdjustRayos(heroId, amount) {
             showPointsAnimation(amount);
         }
         
+        pendingQuickAdjust = null;
     } catch (e) {
         console.error('Error al ajustar rayos:', e);
         // Revertir si falló
