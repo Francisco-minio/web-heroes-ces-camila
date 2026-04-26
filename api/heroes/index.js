@@ -6,6 +6,9 @@ export default async function handler(req, res) {
   try {
     if (method === 'GET') {
       const heroes = await prisma.hero.findMany({
+        include: {
+          pointsHistory: true
+        },
         orderBy: [
           { points: 'desc' },
           { heroName: 'asc' }

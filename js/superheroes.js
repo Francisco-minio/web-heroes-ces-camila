@@ -890,10 +890,10 @@ async function assignPoints() {
 
         // Mostrar animación
         if (typeof showPointsAnimation === 'function') showPointsAnimation(points);
-        showSuccessAnimation(`¡${points} puntos asignados!`);
+        showSuccessAnimation(`¡${points} rayos (⚡) actualizados!`);
     } catch (e) {
-        console.error('Error al asignar puntos:', e);
-        showErrorAnimation('Error al asignar puntos en el servidor');
+        console.error('Error al actualizar rayos:', e);
+        showErrorAnimation('Error al actualizar rayos en el servidor');
     }
 }
 
@@ -1063,14 +1063,56 @@ function updateMissionsHistory() {
 }
 
 // Actualizar rankings
-function updateRankings() {
-    const weeklyRanking = [...heroes].sort((a, b) => b.points - a.points);
-
-    ['weekly', 'monthly', 'general'].forEach(period => {
+function updateRankings(specificPeriod) {
+    const periods = specificPeriod ? [specificPeriod] : ['daily', 'weekly', 'monthly', 'general'];
+    const now = new Date();
+    
+    periods.forEach(period => {
         const container = document.getElementById(`${period}RankingList`);
+        if (!container) return;
+
         container.innerHTML = '';
 
-        weeklyRanking.slice(0, 10).forEach((hero, index) => {
+        // Calcular puntos para el periodo
+        const heroesWithPeriodPoints = heroes.map(hero => {
+            let periodPoints = 0;
+            const history = hero.pointsHistory || [];
+            
+            if (period === 'general') {
+                periodPoints = hero.points;
+            } else {
+                const startDate = new Date();
+                if (period === 'daily') startDate.setHours(0, 0, 0, 0);
+                if (period === 'weekly') {
+                    const day = startDate.getDay();
+                    const diff = startDate.getDate() - day + (day === 0 ? -6 : 1); // Adjust to Monday
+                    startDate.setDate(diff);
+                    startDate.setHours(0, 0, 0, 0);
+                }
+                if (period === 'monthly') {
+                    startDate.setDate(1);
+                    startDate.setHours(0, 0, 0, 0);
+                }
+
+                periodPoints = history
+                    .filter(h => new Date(h.date) >= startDate)
+                    .reduce((sum, h) => sum + h.points, 0);
+            }
+
+            return { ...hero, periodPoints };
+        });
+
+        // Ordenar por puntos del periodo
+        const rankedHeroes = heroesWithPeriodPoints
+            .sort((a, b) => b.periodPoints - a.periodPoints)
+            .slice(0, 10);
+
+        if (rankedHeroes.length === 0) {
+            container.innerHTML = '<p class="text-center text-muted p-3">Sin actividad en este periodo</p>';
+            return;
+        }
+
+        rankedHeroes.forEach((hero, index) => {
             const rankingItem = document.createElement('div');
             rankingItem.className = 'ranking-item';
             if (currentUser && hero.id === currentUser.id) {
@@ -1086,10 +1128,10 @@ function updateRankings() {
                 <div class="ranking-avatar h2 mb-0 me-3">${hero.avatar}</div>
                 <div class="flex-grow-1">
                     <div class="fw-bold mb-0">${hero.heroName}</div>
-                    <div class="small text-muted"><i class="fas fa-bolt text-warning"></i> ${hero.specialPower || 'Poder en desarrollo'}</div>
+                    <div class="small text-muted"><i class="fas fa-bolt text-warning"></i> ${hero.course || 'Héroe'}</div>
                 </div>
                 <div class="text-end">
-                    <div class="badge bg-warning">${hero.points} pts</div>
+                    <div class="badge bg-warning">${hero.periodPoints} ⚡</div>
                 </div>
             `;
             container.appendChild(rankingItem);
@@ -1114,26 +1156,26 @@ function updateMedals() {
 
     const allMedals = [];
 
-    // 1. Medallas automáticas basadas en puntos
+    // 1. Medallas automáticas basadas en rayos
     if (currentUser.points >= 50) allMedals.push({
         icon: '🥉',
         name: 'Bronce',
-        description: '¡Has alcanzado 50 puntos! Tu esfuerzo comienza a dar frutos.',
-        requirement: '50 puntos',
+        description: '¡Has alcanzado 50 rayos! Tu esfuerzo comienza a dar frutos.',
+        requirement: '50 rayos (⚡)',
         type: 'auto'
     });
     if (currentUser.points >= 100) allMedals.push({
         icon: '🥈',
         name: 'Plata',
-        description: '¡Increíble! 100 puntos demuestran tu constancia.',
-        requirement: '100 puntos',
+        description: '¡Increíble! 100 rayos demuestran tu constancia.',
+        requirement: '100 rayos (⚡)',
         type: 'auto'
     });
     if (currentUser.points >= 200) allMedals.push({
         icon: '🥇',
         name: 'Oro',
-        description: '¡Excelencia pura! 200 puntos te convierten en una leyenda.',
-        requirement: '200 puntos',
+        description: '¡Excelencia pura! 200 rayos te convierten en una leyenda.',
+        requirement: '200 rayos (⚡)',
         type: 'auto'
     });
     if (currentUser.streak >= 7) allMedals.push({
