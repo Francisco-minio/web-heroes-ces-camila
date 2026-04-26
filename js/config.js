@@ -9,6 +9,7 @@
         adminUsername: 'profesor',
         adminPassword: 'heroes2024',
         useFirebase: false,
+        usePrisma: true,
         firebaseConfig: null,
         encryptionKey: null
     };
@@ -55,6 +56,10 @@
         
         get ENABLE_ENCRYPTION() {
             return window.ENV?.ENABLE_ENCRYPTION === 'true';
+        },
+        
+        get USE_PRISMA() {
+            return window.ENV?.USE_PRISMA !== 'false'; // Default: true
         }
     };
     

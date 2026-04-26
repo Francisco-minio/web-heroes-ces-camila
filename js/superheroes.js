@@ -32,10 +32,11 @@ let nextMedalId = 9; // Para generar nuevos IDs
 
 // Configuración de API
 const API_CONFIG = {
-    // Detectar automáticamente si hay backend PHP disponible
-    get useMySQL() {
-        return (window.APP_CONFIG && window.APP_CONFIG.USE_MYSQL === true) ||
-            window.location.pathname.includes('/api/');
+    // Detectar automáticamente si hay backend disponible
+    get useBackend() {
+        return (window.APP_CONFIG && window.APP_CONFIG.USE_PRISMA === true) || 
+               window.location.hostname === 'localhost' ||
+               window.location.hostname.includes('vercel.app');
     },
     get baseURL() {
         return (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || './api';
@@ -78,7 +79,7 @@ window.safeStorage = safeStorage;
 const heroAPI = {
     // GET todos los héroes
     async getAll() {
-        if (API_CONFIG.useMySQL) {
+        if (API_CONFIG.useBackend) {
             try {
                 const response = await fetch(`${API_CONFIG.baseURL}/heroes`);
                 if (!response.ok) throw new Error('API error');
@@ -93,7 +94,7 @@ const heroAPI = {
 
     // GET un héroe
     async getById(id) {
-        if (API_CONFIG.useMySQL) {
+        if (API_CONFIG.useBackend) {
             const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`);
             return await response.json();
         }
@@ -102,7 +103,7 @@ const heroAPI = {
 
     // POST crear héroe
     async create(heroData) {
-        if (API_CONFIG.useMySQL) {
+        if (API_CONFIG.useBackend) {
             const response = await fetch(`${API_CONFIG.baseURL}/heroes`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -119,7 +120,7 @@ const heroAPI = {
 
     // PUT actualizar héroe
     async update(id, heroData) {
-        if (API_CONFIG.useMySQL) {
+        if (API_CONFIG.useBackend) {
             const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
@@ -138,7 +139,7 @@ const heroAPI = {
 
     // DELETE eliminar héroe
     async delete(id) {
-        if (API_CONFIG.useMySQL) {
+        if (API_CONFIG.useBackend) {
             const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`, {
                 method: 'DELETE'
             });
@@ -152,7 +153,7 @@ const heroAPI = {
 
     // POST asignar puntos
     async assignPoints(id, points, reason) {
-        if (API_CONFIG.useMySQL) {
+        if (API_CONFIG.useBackend) {
             const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}/points`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -181,8 +182,9 @@ const ADMIN_CREDENTIALS = {
 let isAuthenticated = false;
 
 // Inicialización
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     loadFromLocalStorage();
+    await syncWithBackend();
     checkAuthentication();
     initializeApp();
     updateStats();
@@ -193,6 +195,23 @@ document.addEventListener('DOMContentLoaded', function() {
     populateCourseDropdowns(); // <-- Añadido
     setupEventListeners();
 });
+
+// Sincronizar datos con el backend si está disponible
+async function syncWithBackend() {
+    if (API_CONFIG.useBackend) {
+        try {
+            console.log('Sincronizando con el backend...');
+            const backendHeroes = await heroAPI.getAll();
+            if (backendHeroes && Array.isArray(backendHeroes) && backendHeroes.length > 0) {
+                heroes = backendHeroes;
+                saveToLocalStorage(); // Guardar copia local por si acaso
+                console.log('Sincronización exitosa. Héroes cargados:', heroes.length);
+            }
+        } catch (e) {
+            console.error('Error al sincronizar con el backend:', e);
+        }
+    }
+}
 
 // Verificar autenticación al cargar
 function checkAuthentication() {
@@ -814,7 +833,7 @@ function populateMedalsHistory() {
 }
 
 // Guardar héroe (nuevo o actualizado)
-function saveHero() {
+async function saveHero() {
     const realName = document.getElementById('realName').value;
     const heroName = document.getElementById('heroName').value;
     const course = document.getElementById('course').value;
@@ -837,75 +856,38 @@ function saveHero() {
         return;
     }
 
-    // Validar longitud de contraseña solo si se proporcionó
-    if (heroPassword && heroPassword.length < 4) {
-        alert('La contraseña debe tener al menos 4 caracteres');
-        return;
-    }
+    const heroData = {
+        realName,
+        heroName,
+        course,
+        specialPower,
+        username: heroUsername,
+        password: heroPassword,
+        avatar: selectedAvatar ? selectedAvatar.innerHTML : (isEditing ? undefined : '🦸')
+    };
 
-    if (isEditing) {
-        // Actualizar héroe existente
-        const heroIndex = heroes.findIndex(h => h.id === window.editingHeroId);
-        if (heroIndex !== -1) {
-            const existingHero = heroes[heroIndex];
-
-            // Solo validar duplicado si se cambió el username
-            if (heroUsername && heroUsername !== existingHero.username) {
-                const duplicateHero = heroes.find(h => h.username === heroUsername && h.id !== existingHero.id);
-                if (duplicateHero) {
-                    alert(`El nombre de usuario "${heroUsername}" ya está en uso. Por favor elige otro.`);
-                    return;
-                }
-            }
-
-            heroes[heroIndex] = {
-                ...existingHero,
-                realName,
-                heroName,
-                course,
-                specialPower,
-                username: heroUsername || existingHero.username,
-                password: heroPassword || existingHero.password,
-                avatar: selectedAvatar ? selectedAvatar.innerHTML : existingHero.avatar
-            };
+    try {
+        if (isEditing) {
+            await heroAPI.update(window.editingHeroId, heroData);
             showSuccessAnimation('¡Héroe actualizado exitosamente!');
-        }
-    } else {
-        // Verificar que el username no esté duplicado
-        const existingHero = heroes.find(h => h.username === heroUsername);
-        if (existingHero) {
-            alert(`El nombre de usuario "${heroUsername}" ya está en uso. Por favor elige otro.`);
-            return;
+        } else {
+            const result = await heroAPI.create(heroData);
+            showSuccessAnimation(`¡Nuevo héroe agregado! <br>Usuario: ${heroUsername} <br>Contraseña: ${heroPassword}`);
         }
 
-        // Crear nuevo héroe
-        const newHero = {
-            id: Date.now(),
-            realName,
-            heroName,
-            course,
-            specialPower,
-            avatar: selectedAvatar ? selectedAvatar.innerHTML : '🦸',
-            points: 0,
-            streak: 0,
-            emojis: [],
-            medals: [],
-            missions: [],
-            username: heroUsername,
-            password: heroPassword
-        };
-        heroes.push(newHero);
-        showSuccessAnimation(`¡Nuevo héroe agregado! <br>Usuario: ${newHero.username} <br>Contraseña: ${newHero.password}`);
+        // Refrescar datos desde el servidor
+        await syncWithBackend();
+        populateHeroesTable();
+        updateStats();
+
+        // Cerrar modal y limpiar formulario
+        const modal = bootstrap.Modal.getInstance(document.getElementById('heroModal'));
+        modal.hide();
+        resetHeroForm();
+    } catch (e) {
+        console.error('Error al guardar:', e);
+        showErrorAnimation('No se pudo guardar en el servidor. Revisa la conexión.');
     }
-
-    saveToLocalStorage();
-    populateHeroesTable();
-    updateStats();
-
-    // Cerrar modal y limpiar formulario
-    const modal = bootstrap.Modal.getInstance(document.getElementById('heroModal'));
-    modal.hide();
-    resetHeroForm();
 }
 
 // Resetear formulario de héroe
@@ -958,18 +940,22 @@ function editHero(id) {
 
 // ...
 // Eliminar héroe
-function deleteHero(id) {
+async function deleteHero(id) {
     if (confirm('¿Estás seguro de que quieres eliminar a este héroe?')) {
-        heroes = heroes.filter(h => h.id !== id);
-        saveToLocalStorage();
-        populateHeroesTable();
-        updateStats();
-        showSuccessAnimation('Héroe eliminado');
+        try {
+            await heroAPI.delete(id);
+            await syncWithBackend();
+            populateHeroesTable();
+            updateStats();
+            showSuccessAnimation('Héroe eliminado');
+        } catch (e) {
+            showErrorAnimation('Error al eliminar');
+        }
     }
 }
 
 // Asignar puntos
-function assignPoints() {
+async function assignPoints() {
     const checkboxes = document.querySelectorAll('#heroesCheckboxes input:checked');
     const reason = document.getElementById('pointsReason').value;
     const points = parseInt(document.getElementById('pointsAmount').value);
@@ -986,35 +972,38 @@ function assignPoints() {
 
     const heroIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
 
-    // Actualizar puntos de los héroes
-    heroIds.forEach(id => {
-        const hero = heroes.find(h => h.id === id);
-        if (hero) {
-            hero.points += points;
-            hero.streak = hero.streak + 1;
-        }
-    });
+    try {
+        // Enviar al servidor para cada héroe
+        const promises = heroIds.map(id => heroAPI.assignPoints(id, points, reason));
+        await Promise.all(promises);
 
-    // Agregar al historial
-    pointsHistory.push({
-        heroIds,
-        reason,
-        points,
-        date: new Date()
-    });
+        // Refrescar datos desde el servidor
+        await syncWithBackend();
+        
+        // Agregar al historial local
+        pointsHistory.push({
+            heroIds,
+            reason,
+            points,
+            date: new Date()
+        });
 
-    saveToLocalStorage();
-    updateStats();
-    populateHeroesTable();
-    populatePointsHistory();
+        saveToLocalStorage();
+        updateStats();
+        populateHeroesTable();
+        populatePointsHistory();
 
-    // Limpiar formulario
-    document.getElementById('pointsReason').value = '';
-    document.querySelectorAll('#heroesCheckboxes input').forEach(cb => cb.checked = false);
+        // Limpiar formulario
+        document.getElementById('pointsReason').value = '';
+        document.querySelectorAll('#heroesCheckboxes input').forEach(cb => cb.checked = false);
 
-    // Mostrar animación
-    showPointsAnimation(points);
-    showSuccessAnimation(`¡${points} puntos asignados!`);
+        // Mostrar animación
+        if (typeof showPointsAnimation === 'function') showPointsAnimation(points);
+        showSuccessAnimation(`¡${points} puntos asignados!`);
+    } catch (e) {
+        console.error('Error al asignar puntos:', e);
+        showErrorAnimation('Error al asignar puntos en el servidor');
+    }
 }
 
 // Actualizar vista del estudiante
