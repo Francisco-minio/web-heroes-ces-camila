@@ -31,6 +31,17 @@ model Hero {
   @@map("heroes")
 }
 
+model SystemConfig {
+  id            Int      @id @default(1)
+  cronAmount    Int      @default(3) @map("cron_amount")
+  cronHour      Int      @default(5) @map("cron_hour")
+  cronBonus     Int      @default(3) @map("cron_bonus")
+  lastCronRun   DateTime? @map("last_cron_run")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@map("system_config")
+}
+
 model PointHistory {
   id        Int      @id @default(autoincrement())
   heroId    Int      @map("hero_id")

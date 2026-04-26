@@ -5,6 +5,7 @@ let currentView = 'admin'; // 'admin' o 'student'
 let heroes = [];
 let pointsHistory = [];
 let currentUser = null;
+let currentSystemConfig = null;
 let selectedHeroes = [];
 let availableAvatars = ['🦸', '🦹', '🐉', '⚡', '🌪️', '🛡️', '🧙', '🧚', '🦸‍♀️', '🦹‍♀️', '🔥', '💫', '🌟', '💪', '🧠', '❤️'];
 let availableEmojis = ['⭐', '🔥', '💪', '🧠', '❤️', '🌈', '🎯', '🎨', '🌍', '🚀', '🔬', '📚', '🎭', '🏆', '🎪', '🎨'];
@@ -1976,9 +1977,19 @@ async function confirmQuickAdjust() {
 // --- GESTIÓN DE TAREAS PROGRAMADAS (CRON) ---
 
 // Poblar logs de tareas programadas
-function populateCronLogs() {
+async function populateCronLogs() {
     const tbody = document.getElementById('cronLogsBody');
     if (!tbody) return;
+
+    // 1. Obtener configuración actual del servidor
+    try {
+        const response = await fetch('/api/system/config');
+        const config = await response.json();
+        currentSystemConfig = config;
+        updateCronDisplay();
+    } catch (e) {
+        console.error('Error al cargar config de cron:', e);
+    }
 
     tbody.innerHTML = '';
 
@@ -2055,13 +2066,65 @@ function populateCronLogs() {
     });
 }
 
+// Actualizar vista de configuración cron
+function updateCronDisplay() {
+    if (!currentSystemConfig) return;
+
+    const hour = currentSystemConfig.cronHour;
+    const hourStr = hour < 12 ? `${hour}:00 AM` : (hour === 12 ? '12:00 PM' : `${hour - 12}:00 PM`);
+    
+    document.getElementById('displayCronHour').textContent = hourStr;
+    document.getElementById('displayCronAmount').textContent = `${currentSystemConfig.cronAmount} Rayos`;
+    document.getElementById('displayCronBonus').textContent = `+${currentSystemConfig.cronBonus} Rayos`;
+
+    // Cargar en inputs también
+    document.getElementById('inputCronHour').value = currentSystemConfig.cronHour;
+    document.getElementById('inputCronAmount').value = currentSystemConfig.cronAmount;
+    document.getElementById('inputCronBonus').value = currentSystemConfig.cronBonus;
+}
+
+// Alternar edición de cron
+function toggleCronEdit(editing) {
+    document.getElementById('cronConfigDisplay').style.display = editing ? 'none' : 'block';
+    document.getElementById('cronConfigEdit').style.display = editing ? 'block' : 'none';
+}
+
+// Guardar configuración de cron
+async function saveCronConfig() {
+    const cronAmount = document.getElementById('inputCronAmount').value;
+    const cronHour = document.getElementById('inputCronHour').value;
+    const cronBonus = document.getElementById('inputCronBonus').value;
+
+    try {
+        const response = await fetch('/api/system/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ cronAmount, cronHour, cronBonus })
+        });
+
+        if (response.ok) {
+            currentSystemConfig = await response.json();
+            updateCronDisplay();
+            toggleCronEdit(false);
+            showSuccessAnimation('Configuración guardada');
+        } else {
+            showErrorAnimation('Error al guardar');
+        }
+    } catch (e) {
+        console.error('Error:', e);
+        showErrorAnimation('Error de conexión');
+    }
+}
+
 // Ejecutar tarea programada manualmente
 async function triggerCronManual() {
     if (!confirm('¿Deseas ejecutar la asignación de rayos manualmente ahora mismo?')) return;
 
     try {
         showSuccessAnimation('Iniciando asignación manual...');
-        const response = await fetch('/api/cron/process-rayos');
+        const response = await fetch('/api/cron/process-rayos', {
+            headers: { 'x-manual-trigger': 'true' }
+        });
         const data = await response.json();
 
         if (data.success) {
