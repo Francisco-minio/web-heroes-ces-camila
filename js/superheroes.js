@@ -2091,28 +2091,44 @@ function toggleCronEdit(editing) {
 
 // Guardar configuración de cron
 async function saveCronConfig() {
-    const cronAmount = document.getElementById('inputCronAmount').value;
-    const cronHour = document.getElementById('inputCronHour').value;
-    const cronBonus = document.getElementById('inputCronBonus').value;
+    const cronAmount = parseInt(document.getElementById('inputCronAmount').value);
+    const cronHour = parseInt(document.getElementById('inputCronHour').value);
+    const cronBonus = parseInt(document.getElementById('inputCronBonus').value);
+
+    // Validaciones básicas
+    if (isNaN(cronAmount) || isNaN(cronHour) || isNaN(cronBonus)) {
+        showErrorAnimation('Por favor ingresa valores numéricos válidos');
+        return;
+    }
+
+    if (cronHour < 0 || cronHour > 23) {
+        showErrorAnimation('La hora debe estar entre 0 y 23');
+        return;
+    }
 
     try {
+        console.log('Enviando configuración:', { cronAmount, cronHour, cronBonus });
         const response = await fetch('/api/system/config', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cronAmount, cronHour, cronBonus })
         });
 
+        const data = await response.json();
+
         if (response.ok) {
-            currentSystemConfig = await response.json();
+            currentSystemConfig = data;
             updateCronDisplay();
             toggleCronEdit(false);
-            showSuccessAnimation('Configuración guardada');
+            showSuccessAnimation('Configuración guardada correctamente');
+            populateCronLogs(); // Refrescar logs
         } else {
-            showErrorAnimation('Error al guardar');
+            console.error('Error del servidor:', data);
+            showErrorAnimation('Error del servidor: ' + (data.error || 'Error desconocido'));
         }
     } catch (e) {
-        console.error('Error:', e);
-        showErrorAnimation('Error de conexión');
+        console.error('Error de red/conexión:', e);
+        showErrorAnimation('No se pudo conectar con el servidor');
     }
 }
 

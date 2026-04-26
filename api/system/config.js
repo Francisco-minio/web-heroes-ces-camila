@@ -22,18 +22,22 @@ export default async function handler(req, res) {
     if (method === 'POST' || method === 'PUT') {
       const { cronAmount, cronHour, cronBonus } = req.body;
       
+      if (cronAmount === undefined || cronHour === undefined) {
+        return res.status(400).json({ error: 'Faltan campos obligatorios' });
+      }
+
       const config = await prisma.systemConfig.upsert({
         where: { id: 1 },
         update: {
-          cronAmount: parseInt(cronAmount),
-          cronHour: parseInt(cronHour),
-          cronBonus: parseInt(cronBonus)
+          cronAmount: Number(cronAmount),
+          cronHour: Number(cronHour),
+          cronBonus: Number(cronBonus || 0)
         },
         create: {
           id: 1,
-          cronAmount: parseInt(cronAmount),
-          cronHour: parseInt(cronHour),
-          cronBonus: parseInt(cronBonus)
+          cronAmount: Number(cronAmount),
+          cronHour: Number(cronHour),
+          cronBonus: Number(cronBonus || 0)
         }
       });
       
