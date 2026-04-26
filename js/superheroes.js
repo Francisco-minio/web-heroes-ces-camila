@@ -187,6 +187,18 @@ document.addEventListener('DOMContentLoaded', async function() {
     populateEmojiSelector();
     populateCourseDropdowns(); // <-- Añadido
     setupEventListeners();
+
+    // Sincronizar datos y actualizar dashboard si es necesario
+    await syncWithBackend();
+    updateDashboard();
+
+    // Toggle sidebar móvil
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    if (sidebarToggle) {
+        sidebarToggle.addEventListener('click', () => {
+            document.getElementById('sidebar').classList.toggle('show');
+        });
+    }
 });
 
 // Sincronizar datos con el backend si está disponible
@@ -352,7 +364,7 @@ function showAdminDashboard() {
     document.getElementById('logoutBtn').style.display = 'inline-block';
     document.getElementById('currentUser').textContent = 'Profesor';
     currentView = 'admin';
-    showSection('stats'); // Mostrar estadísticas por defecto
+    showSection('dashboard'); // Mostrar dashboard por defecto
 }
 
 // Mostrar animación de error
@@ -521,47 +533,36 @@ function toggleView() {
     }
 }
 
-// Mostrar sección específica del dashboard con animación
+// Cambiar de sección en el panel
 function showSection(section) {
-    // Ocultar todas las secciones con transición
-    const sections = ['statsSection', 'heroesSection', 'coursesSection', 'pointsSection', 'medalsSection'];
-    sections.forEach(s => {
-        const el = document.getElementById(s);
-        if (el) {
-            el.style.display = 'none';
-            el.classList.remove('animate__animated', 'animate__fadeInUp');
+    console.log('Mostrando sección:', section);
+    
+    // Ocultar todas las secciones
+    const sections = document.querySelectorAll('.content-section');
+    sections.forEach(s => s.style.display = 'none');
+
+    // Actualizar menú activo
+    const menuItems = document.querySelectorAll('.menu-item');
+    menuItems.forEach(item => {
+        item.classList.remove('active');
+        if (item.getAttribute('onclick').includes(`'${section}'`)) {
+            item.classList.add('active');
         }
     });
 
-    const targetEl = document.getElementById(`${section}Section`);
+    // Mapeo de secciones nuevas a contenedores
+    const sectionMap = {
+        'dashboard': 'dashboardSection',
+        'management': 'managementSection',
+        'ranking': 'rankingSection',
+        'history': 'historySection'
+    };
+
+    const targetId = sectionMap[section] || 'dashboardSection';
+    const targetEl = document.getElementById(targetId);
+
     if (targetEl) {
         targetEl.style.display = 'block';
-        // Añadir clase de animación (usando CSS transition o simple timeout para reflow)
-        setTimeout(() => {
-            targetEl.style.opacity = '1';
-            targetEl.style.transform = 'translateY(0)';
-        }, 10);
-    }
-
-    // Poblar datos específicos
-    switch (section) {
-        case 'heroes':
-            populateHeroesTable();
-            break;
-        case 'courses':
-            refreshCourseView();
-            break;
-        case 'points':
-            populateHeroesCheckboxes();
-            populatePointsHistory();
-            break;
-        case 'medals':
-            populateMedalsSection();
-            break;
-        case 'cron':
-            populateCronLogs();
-            break;
-        case 'quickRayos':
             populateQuickRayos();
             break;
         case 'stats':
@@ -570,25 +571,79 @@ function showSection(section) {
     }
 }
 
-// Actualizar estadísticas
+// Actualizar estadísticas globales y Dashboard
 function updateStats() {
     const totalHeroesEl = document.getElementById('totalHeroes');
     if (!totalHeroesEl) return;
 
     totalHeroesEl.textContent = heroes.length;
     document.getElementById('totalPoints').textContent = heroes.reduce((sum, hero) => sum + hero.points, 0);
-    document.getElementById('activeMissions').textContent = heroes.reduce((sum, hero) => sum + (hero.missions ? hero.missions.length : 0), 0);
+    document.getElementById('activeMissions').textContent = heroes.length > 0 ? 'En curso' : 'Sin misiones';
 
     const sortedHeroes = [...heroes].sort((a, b) => b.points - a.points);
-    const topHeroElement = document.getElementById('topHeroes');
-    
+    const topHeroElement = document.getElementById('topHeroName');
     if (topHeroElement) {
-        if (sortedHeroes.length > 0) {
-            topHeroElement.textContent = sortedHeroes[0].heroName;
-        } else {
-            topHeroElement.textContent = '-';
-        }
+        topHeroElement.textContent = sortedHeroes.length > 0 ? sortedHeroes[0].heroName : '--';
     }
+}
+
+// Poblar el Dashboard con Ranking compacto y actividad
+function updateDashboard() {
+    updateStats();
+    
+    // 1. Ranking Compacto (Top 5)
+    const list = document.getElementById('top5RankingList');
+    if (!list) return;
+
+    const top5 = [...heroes].sort((a, b) => b.points - a.points).slice(0, 5);
+    list.innerHTML = '';
+
+    top5.forEach((hero, index) => {
+        const div = document.createElement('div');
+        div.className = 'ranking-item-compact';
+        div.innerHTML = `
+            <div class="fw-bold text-warning" style="width: 25px;">#${index + 1}</div>
+            <div class="fs-4">${hero.avatar}</div>
+            <div class="flex-grow-1">
+                <div class="fw-bold small">${hero.heroName}</div>
+                <div class="xsmall text-muted">${hero.course || 'Héroe'}</div>
+            </div>
+            <div class="badge bg-glass-blue text-info">${hero.points} ⚡</div>
+        `;
+        list.appendChild(div);
+    });
+
+    // 2. Actividad Reciente (Mapear puntos history)
+    const activityList = document.getElementById('recentActivityList');
+    if (!activityList) return;
+
+    let history = [];
+    heroes.forEach(h => {
+        if (h.pointsHistory) {
+            h.pointsHistory.forEach(p => history.push({ ...p, heroName: h.heroName }));
+        }
+    });
+
+    const recent = history.sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 6);
+    activityList.innerHTML = '';
+
+    recent.forEach(act => {
+        const li = document.createElement('li');
+        li.className = 'list-group-item bg-transparent border-0 border-bottom border-secondary-subtle py-3';
+        li.innerHTML = `
+            <div class="d-flex justify-content-between align-items-start">
+                <div>
+                    <div class="fw-bold small text-white">${act.heroName}</div>
+                    <div class="xsmall text-muted">${act.reason}</div>
+                </div>
+                <div class="text-end">
+                    <div class="small ${act.points > 0 ? 'text-success' : 'text-danger'} fw-bold">${act.points > 0 ? '+' : ''}${act.points}</div>
+                    <div class="xsmall text-muted">${new Date(act.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            </div>
+        `;
+        activityList.appendChild(li);
+    });
 }
 
 // Poblar tabla de héroes
