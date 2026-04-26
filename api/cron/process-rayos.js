@@ -11,8 +11,8 @@ export default async function handler(req, res) {
     const today = new Date();
     const isSunday = today.getDay() === 0; // 0 is Sunday
     
-    // Cantidad base: 1 rayo diario
-    let amount = 1;
+    // Cantidad base: 3 rayos diarios
+    let amount = 3;
     let reason = 'Asignación diaria automática (⚡)';
 
     // Si es domingo, sumar 3 más
