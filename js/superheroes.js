@@ -1981,17 +1981,30 @@ async function populateCronLogs() {
     const tbody = document.getElementById('cronLogsBody');
     if (!tbody) return;
 
+    // Mostrar estado de carga en el panel de config
+    const displayHour = document.getElementById('displayCronHour');
+    if (displayHour && displayHour.textContent === '--:-- AM') {
+        displayHour.textContent = 'Cargando...';
+    }
+
     // 1. Obtener configuración actual del servidor
     try {
         const response = await fetch('/api/system/config');
+        if (!response.ok) throw new Error('Fallo al conectar con el servidor');
+        
         const config = await response.json();
-        currentSystemConfig = config;
-        updateCronDisplay();
+        if (config && !config.error) {
+            currentSystemConfig = config;
+            updateCronDisplay();
+        } else {
+            console.error('Configuración inválida:', config);
+        }
     } catch (e) {
         console.error('Error al cargar config de cron:', e);
+        if (displayHour) displayHour.textContent = 'Error al cargar';
     }
 
-    tbody.innerHTML = '';
+    tbody.innerHTML = '<tr><td colspan="5" class="text-center p-4"><div class="spinner-border spinner-border-sm text-primary"></div> Cargando historial...</td></tr>';
 
     // Extraer todas las entradas de historial que sean automáticas
     let allAutomatedHistory = [];
@@ -2085,6 +2098,14 @@ function updateCronDisplay() {
 
 // Alternar edición de cron
 function toggleCronEdit(editing) {
+    if (editing) {
+        // Asegurar que haya valores si falló la carga inicial
+        if (!document.getElementById('inputCronHour').value) {
+            document.getElementById('inputCronHour').value = 5;
+            document.getElementById('inputCronAmount').value = 3;
+            document.getElementById('inputCronBonus').value = 3;
+        }
+    }
     document.getElementById('cronConfigDisplay').style.display = editing ? 'none' : 'block';
     document.getElementById('cronConfigEdit').style.display = editing ? 'block' : 'none';
 }
