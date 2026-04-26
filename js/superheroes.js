@@ -19,14 +19,6 @@ let availableMedals = [
     { id: 8, name: 'Arcoíris de Talentos', icon: '🌈', description: 'Versatilidad' }
 ];
 
-let rewards = [
-    { id: 1, name: 'Pegatina Especial', icon: '🎨', points: 50, type: 'physical' },
-    { id: 2, name: 'Lápiz de Héroe', icon: '✏️', points: 75, type: 'physical' },
-    { id: 3, name: 'Certificado de Honor', icon: '📜', points: 150, type: 'physical' },
-    { id: 4, name: 'Ayudante del Profesor', icon: '🤝', points: 100, type: 'privilege' },
-    { id: 5, name: 'Tiempo Extra Recreo', icon: '⏰', points: 80, type: 'privilege' },
-    { id: 6, name: 'Elegir Música', icon: '🎵', points: 120, type: 'privilege' }
-];
 
 let nextMedalId = 9; // Para generar nuevos IDs
 
@@ -1039,7 +1031,6 @@ function updateStudentView() {
     updateEmojiSelector();
 
     // Actualizar tienda de recompensas
-    updateRewardsShop();
 }
 
 // Actualizar selector de emojis del estudiante
@@ -1865,59 +1856,6 @@ function addNewCourse() {
     
     saveToLocalStorage();
     showSuccessAnimation(`Curso ${name} agregado correctamente`);
-}
-function updateRewardsShop() {
-    const container = document.getElementById('rewardsShop');
-    if (!container) return;
-
-    container.innerHTML = '';
-
-    rewards.forEach(reward => {
-        const canAfford = currentUser && currentUser.points >= reward.points;
-        const rewardCol = document.createElement('div');
-        rewardCol.className = 'col-md-4 col-sm-6 mb-4';
-        rewardCol.innerHTML = `
-            <div class="reward-card ${!canAfford ? 'opacity-75' : ''}">
-                <div>
-                    <div class="reward-icon">${reward.icon}</div>
-                    <h5 class="fw-bold mb-1">${reward.name}</h5>
-                    <p class="small text-muted mb-3">${reward.type === 'physical' ? 'Objeto Real' : 'Privilegio Especial'}</p>
-                </div>
-                <div>
-                    <div class="reward-price">${reward.points} Pts</div>
-                    <button class="btn ${canAfford ? 'btn-primary' : 'btn-secondary'} w-100" 
-                            onclick="redeemReward(${reward.id})" 
-                            ${!canAfford ? 'disabled' : ''}>
-                        <i class="fas fa-shopping-cart me-2"></i> ${canAfford ? 'Canjear' : 'Faltan ' + (reward.points - currentUser.points) + ' pts'}
-                    </button>
-                </div>
-            </div>
-        `;
-        container.appendChild(rewardCol);
-    });
-}
-
-// Canjear recompensa
-function redeemReward(id) {
-    const reward = rewards.find(r => r.id === id);
-    if (!reward || !currentUser) return;
-
-    if (currentUser.points >= reward.points) {
-        if (confirm(`¿Quieres canjear "${reward.name}" por ${reward.points} puntos?`)) {
-            currentUser.points -= reward.points;
-            
-            // Actualizar en el array global
-            const heroIndex = heroes.findIndex(h => h.id === currentUser.id);
-            if (heroIndex !== -1) {
-                heroes[heroIndex].points = currentUser.points;
-            }
-
-            saveToLocalStorage();
-            updateStudentView();
-            showSuccessAnimation(`¡Has canjeado ${reward.name}!`);
-            showConfetti();
-        }
-    }
 }
 
 function showConfetti() {
