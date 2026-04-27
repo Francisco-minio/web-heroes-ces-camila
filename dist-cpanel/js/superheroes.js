@@ -149,6 +149,29 @@ function authenticate() {
     }
 }
 
+// Autenticar Estudiante (Héroe)
+function authenticateHero() {
+    const heroName = document.getElementById('heroUsername').value.trim();
+    const heroPass = document.getElementById('heroPassword').value.trim();
+
+    // Buscar héroe en la lista cargada desde PHP
+    const hero = heroes.find(h => 
+        h.heroName.toLowerCase() === heroName.toLowerCase() && 
+        (h.password === heroPass || h.realName === heroPass) // Permitir entrar con realName como clave si no hay
+    );
+
+    if (hero) {
+        currentUser = hero;
+        safeStorage.setItem('currentHeroId', hero.id);
+        showStudentView();
+        showSuccessAnimation(`¡Bienvenido de vuelta, ${hero.heroName}!`);
+        const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
+        if (modal) modal.hide();
+    } else {
+        showErrorAnimation('Héroe no encontrado o clave incorrecta.');
+    }
+}
+
 // Navegación de Vistas
 function showAdminDashboard() {
     document.getElementById('adminDashboard').style.display = 'block';
