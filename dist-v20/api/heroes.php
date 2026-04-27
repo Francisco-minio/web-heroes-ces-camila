@@ -54,11 +54,11 @@ try {
                 $stmt->execute([
                     $data['heroName'], 
                     $data['realName'], 
-                    isset($data['username']) ? $data['username'] : '',
-                    isset($data['password']) ? $data['password'] : '',
-                    isset($data['course']) ? $data['course'] : '', 
-                    isset($data['superPower']) ? $data['superPower'] : '', 
-                    isset($data['avatar']) ? $data['avatar'] : '🦸', 
+                    $data['username'] ?? '',
+                    $data['password'] ?? '',
+                    $data['course'] ?? '', 
+                    $data['superPower'] ?? '', 
+                    $data['avatar'] ?? '🦸', 
                     $data['id']
                 ]);
                 echo json_encode(["success" => true, "id" => $data['id']]);
@@ -69,11 +69,11 @@ try {
                 $stmt->execute([
                     $data['heroName'], 
                     $data['realName'], 
-                    isset($data['username']) ? $data['username'] : '',
-                    isset($data['password']) ? $data['password'] : '',
-                    isset($data['course']) ? $data['course'] : '', 
-                    isset($data['superPower']) ? $data['superPower'] : '', 
-                    isset($data['avatar']) ? $data['avatar'] : '🦸'
+                    $data['username'] ?? '',
+                    $data['password'] ?? '',
+                    $data['course'] ?? '', 
+                    $data['superPower'] ?? '', 
+                    $data['avatar'] ?? '🦸'
                 ]);
                 echo json_encode(["success" => true, "id" => $pdo->lastInsertId()]);
             }
