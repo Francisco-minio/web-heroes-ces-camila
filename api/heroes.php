@@ -12,6 +12,8 @@ try {
                 // Obtener un héroe específico con su historial
                 $stmt = $pdo->prepare("SELECT * FROM heroes WHERE id = ?");
                 $stmt->execute([$id]);
+                $today = date('Y-m-d H:i:s');
+                $currentHour = intval(date('H'));
                 $hero = $stmt->fetch();
                 
                 if ($hero) {
@@ -38,8 +40,11 @@ try {
             break;
 
         case 'POST':
-            $data = json_encode(file_get_contents('php://input'), true);
-            if (!$data) $data = $_POST; // Fallback para form data
+            $input = file_get_contents('php://input');
+            $data = json_decode($input, true);
+            if (!$data) {
+                $data = $_POST;
+            }
 
             // Lógica de Guardar/Actualizar
             if (isset($data['id']) && $data['id'] > 0) {

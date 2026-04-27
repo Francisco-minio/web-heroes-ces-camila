@@ -16,7 +16,7 @@ try {
         $config = ["cron_amount" => 3, "cron_hour" => 5, "cron_bonus" => 3, "last_cron_run" => null];
     }
 
-    $today = new Date();
+    $today = date('Y-m-d H:i:s');
     $currentHour = intval(date('H'));
     $isSunday = (date('N') == 7);
     

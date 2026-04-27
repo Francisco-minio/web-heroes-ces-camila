@@ -63,6 +63,22 @@
         }
     };
     
+    // Configuración de Cursos
+    window.COURSES_CONFIG = [
+        { id: '1A', name: '1º Básico A' },
+        { id: '1B', name: '1º Básico B' },
+        { id: '2A', name: '2º Básico A' },
+        { id: '2B', name: '2º Básico B' },
+        { id: '3A', name: '3º Básico A' },
+        { id: '3B', name: '3º Básico B' },
+        { id: '4A', name: '4º Básico A' },
+        { id: '4B', name: '4º Básico B' },
+        { id: '5A', name: '5º Básico A' },
+        { id: '5B', name: '5º Básico B' },
+        { id: '6A', name: '6º Básico A' },
+        { id: '6B', name: '6º Básico B' }
+    ];
+    
     // Validación de seguridad
     window.APP_CONFIG.validate = function() {
         const warnings = [];
