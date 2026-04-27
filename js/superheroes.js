@@ -1563,7 +1563,7 @@ async function awardMedal() {
     ];
 
     try {
-        if (API_CONFIG.useBackend) {
+        if (true) {
             await heroAPI.update(heroId, { medals: newMedals });
         }
         
@@ -1596,7 +1596,7 @@ async function removeMedal(heroId, medalIndex) {
     newMedals.splice(medalIndex, 1);
 
     try {
-        if (API_CONFIG.useBackend) {
+        if (true) {
             await heroAPI.update(heroId, { medals: newMedals });
         }
         
@@ -1806,7 +1806,7 @@ async function confirmQuickAdjust() {
     populateQuickRayos();
     
     try {
-        if (API_CONFIG.useBackend) {
+        if (true) {
             await heroAPI.update(heroId, { 
                 points: hero.points,
                 pointsHistory: {
