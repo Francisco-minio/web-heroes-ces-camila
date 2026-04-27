@@ -619,34 +619,116 @@ function updateDashboard() {
     });
 }
 
+// --- GESTIÓN DE HÉROES (MODALES Y ACCIONES) ---
+
+// Mostrar formulario para nuevo héroe
+function showAddHeroForm() {
+    const form = document.getElementById('heroForm');
+    if (form) form.reset();
+    document.getElementById('heroId').value = '';
+    document.getElementById('heroModalLabel').textContent = 'Registrar Nuevo Héroe';
+    document.getElementById('heroAvatarDisplay').textContent = '🦸';
+    
+    const modal = new bootstrap.Modal(document.getElementById('heroModal'));
+    modal.show();
+}
+
+// Editar héroe existente
+async function editHero(id) {
+    try {
+        const hero = await heroAPI.getById(id);
+        if (hero) {
+            document.getElementById('heroId').value = hero.id;
+            document.getElementById('realName').value = hero.realName;
+            document.getElementById('heroName').value = hero.heroName;
+            document.getElementById('heroCourse').value = hero.course || '';
+            document.getElementById('superPower').value = hero.superPower || '';
+            document.getElementById('heroAvatarDisplay').textContent = hero.avatar || '🦸';
+            document.getElementById('heroModalLabel').textContent = 'Editar Héroe';
+            
+            const modal = new bootstrap.Modal(document.getElementById('heroModal'));
+            modal.show();
+        }
+    } catch (e) {
+        console.error('Error al cargar héroe para editar:', e);
+    }
+}
+
+// Guardar (Crear o Actualizar) héroe
+async function saveHero() {
+    const heroId = document.getElementById('heroId').value;
+    const heroData = {
+        realName: document.getElementById('realName').value,
+        heroName: document.getElementById('heroName').value,
+        course: document.getElementById('heroCourse').value,
+        superPower: document.getElementById('superPower').value,
+        avatar: document.getElementById('heroAvatarDisplay').textContent
+    };
+
+    try {
+        let result;
+        if (heroId) {
+            result = await heroAPI.update(heroId, heroData);
+        } else {
+            result = await heroAPI.create(heroData);
+        }
+
+        if (result) {
+            const modalEl = document.getElementById('heroModal');
+            const modal = bootstrap.Modal.getInstance(modalEl);
+            if (modal) modal.hide();
+            
+            showSuccessAnimation(heroId ? 'Héroe actualizado' : 'Héroe creado');
+            await syncWithBackend();
+            populateHeroesTable();
+            updateDashboard();
+        }
+    } catch (e) {
+        console.error('Error al guardar héroe:', e);
+        alert('Error al guardar los datos');
+    }
+}
+
+// Eliminar héroe
+async function deleteHero(id) {
+    if (confirm('¿Estás seguro de que deseas eliminar este héroe? Esta acción no se puede deshacer.')) {
+        try {
+            const result = await heroAPI.delete(id);
+            if (result.success) {
+                showSuccessAnimation('Héroe eliminado');
+                await syncWithBackend();
+                populateHeroesTable();
+                updateDashboard();
+            }
+        } catch (e) {
+            console.error('Error al eliminar héroe:', e);
+        }
+    }
+}
 // Poblar tabla de héroes
 function populateHeroesTable() {
     const tbody = document.getElementById('heroesTableBody');
+    if (!tbody) return;
     tbody.innerHTML = '';
 
     heroes.forEach(hero => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td><span style="font-size: 2rem;">${hero.avatar}</span></td>
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><span class="fs-3">${hero.avatar || '🦸'}</span></td>
             <td>${hero.realName}</td>
-            <td><strong>${hero.heroName}</strong></td>
-            <td>${hero.course}</td>
-            <td>${hero.specialPower}</td>
-            <td><span class="badge bg-warning text-dark">${hero.points}</span></td>
+            <td class="fw-bold text-info">${hero.heroName}</td>
+            <td><span class="badge bg-secondary">${hero.course || 'N/A'}</span></td>
+            <td><span class="badge bg-warning text-dark">${hero.points} ⚡</span></td>
             <td>
-                <small><strong>Usuario:</strong> ${hero.username || 'N/A'}</small><br>
-                <small><strong>Clave:</strong> ${hero.password || 'N/A'}</small>
-            </td>
-            <td>
-                <button class="btn btn-sm btn-primary" onclick="editHero(${hero.id})">
+                <button class="btn btn-sm btn-outline-info me-1" onclick="editHero(${hero.id})">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="btn btn-sm btn-danger" onclick="deleteHero(${hero.id})">
+                <button class="btn btn-sm btn-outline-danger" onclick="deleteHero(${hero.id})">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
         `;
-        tbody.appendChild(row);
+        tbody.appendChild(tr);
     });
 }
 
