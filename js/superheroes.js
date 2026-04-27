@@ -359,6 +359,10 @@ async function deleteCourse(id) {
 function showSection(section) {
     console.log('Mostrando sección:', section);
     
+    // Cerrar menú móvil si está abierto
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) sidebar.classList.remove('show');
+    
     // Ocultar todas las secciones
     const sections = document.querySelectorAll('.content-section');
     sections.forEach(s => s.style.display = 'none');
