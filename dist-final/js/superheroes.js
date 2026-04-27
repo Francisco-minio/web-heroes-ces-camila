@@ -7,19 +7,6 @@ let currentUser = null;
 let currentSystemConfig = null;
 let isAuthenticated = false;
 
-// Utilidad de Persistencia Segura
-const safeStorage = {
-    getItem: (key) => {
-        try { return localStorage.getItem(key); } catch (e) { return null; }
-    },
-    setItem: (key, value) => {
-        try { localStorage.setItem(key, value); } catch (e) { }
-    },
-    removeItem: (key) => {
-        try { localStorage.removeItem(key); } catch (e) { }
-    }
-};
-
 const API_PATH = 'api/'; 
 
 // Catálogo Visual

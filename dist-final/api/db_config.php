@@ -17,9 +17,11 @@ try {
     $pdo = new PDO($dsn, $user, $pass, $options);
 } catch (\PDOException $e) {
     header('Content-Type: application/json');
-    die(json_encode([
-        "error" => "Error de conexión a la base de datos",
-        "details" => $e->getMessage()
-    ]));
+    http_response_code(500);
+    echo json_encode([
+        "error" => "Error de conexión: " . $e->getMessage(),
+        "hint" => "Asegúrate de configurar api/db_config.php con tus datos de cPanel"
+    ]);
+    exit;
 }
 ?>
