@@ -526,11 +526,21 @@ function showSection(section) {
 
     if (targetEl) {
         targetEl.style.display = 'block';
-            populateQuickRayos();
-            break;
-        case 'stats':
-            updateStats();
-            break;
+        
+        // Actualizar título de la sección
+        const titleMap = {
+            'dashboard': 'Dashboard General',
+            'management': 'Centro de Control',
+            'ranking': 'Hall de la Fama',
+            'history': 'Auditoría de Acciones'
+        };
+        document.getElementById('sectionTitle').textContent = titleMap[section] || 'Panel de Control';
+
+        // Poblar datos iniciales según la sección
+        if (section === 'dashboard') updateDashboard();
+        if (section === 'management') populateHeroesTable();
+        if (section === 'ranking') updateRankings('daily');
+        if (section === 'history') populatePointsHistory();
     }
 }
 

@@ -6,6 +6,7 @@ let heroes = [];
 let pointsHistory = [];
 let currentUser = null;
 let currentSystemConfig = null;
+const API_PATH = 'api/'; // Ruta para PHP en cPanel
 let selectedHeroes = [];
 let availableAvatars = ['🦸', '🦹', '🐉', '⚡', '🌪️', '🛡️', '🧙', '🧚', '🦸‍♀️', '🦹‍♀️', '🔥', '💫', '🌟', '💪', '🧠', '❤️'];
 let availableEmojis = ['⭐', '🔥', '💪', '🧠', '❤️', '🌈', '🎯', '🎨', '🌍', '🚀', '🔬', '📚', '🎭', '🏆', '🎪', '🎨'];
@@ -72,95 +73,65 @@ window.safeStorage = safeStorage;
 const heroAPI = {
     // GET todos los héroes
     async getAll() {
-        if (API_CONFIG.useBackend) {
-            try {
-                const response = await fetch(`${API_CONFIG.baseURL}/heroes`);
-                if (!response.ok) throw new Error('API error');
-                return await response.json();
-            } catch (e) {
-                console.log('API no disponible, usando LocalStorage');
-                return heroes;
-            }
-        }
-        return heroes;
+        const response = await fetch(`${API_PATH}heroes.php`);
+        return await response.json();
     },
 
     // GET un héroe
     async getById(id) {
-        if (API_CONFIG.useBackend) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`);
-            return await response.json();
-        }
-        return heroes.find(h => h.id === id);
+        const response = await fetch(`${API_PATH}heroes.php?id=${id}`);
+        return await response.json();
     },
 
     // POST crear héroe
     async create(heroData) {
-        if (API_CONFIG.useBackend) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(heroData)
-            });
-            return await response.json();
-        }
-        // Fallback LocalStorage
-        const newHero = {...heroData, id: Date.now() };
-        heroes.push(newHero);
-        saveToLocalStorage();
-        return { id: newHero.id, message: 'Héroe creado' };
+        const response = await fetch(`${API_PATH}heroes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(heroData)
+        });
+        return await response.json();
     },
 
-    // PUT actualizar héroe
+    // POST actualizar héroe
     async update(id, heroData) {
-        if (API_CONFIG.useBackend) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(heroData)
-            });
-            return await response.json();
-        }
-        // Fallback LocalStorage
-        const index = heroes.findIndex(h => h.id === id);
-        if (index !== -1) {
-            heroes[index] = {...heroes[index], ...heroData };
-            saveToLocalStorage();
-        }
-        return { success: true };
+        const response = await fetch(`${API_PATH}heroes.php`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ ...heroData, id: id })
+        });
+        return await response.json();
     },
 
     // DELETE eliminar héroe
     async delete(id) {
-        if (API_CONFIG.useBackend) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}`, {
-                method: 'DELETE'
-            });
-            return await response.json();
-        }
-        // Fallback LocalStorage
-        heroes = heroes.filter(h => h.id !== id);
-        saveToLocalStorage();
-        return { success: true };
+        const response = await fetch(`${API_PATH}heroes.php?id=${id}`, {
+            method: 'DELETE'
+        });
+        return await response.json();
     },
 
     // POST asignar puntos
-    async assignPoints(id, points, reason) {
-        if (API_CONFIG.useBackend) {
-            const response = await fetch(`${API_CONFIG.baseURL}/heroes/${id}/points`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ points, reason })
-            });
-            return await response.json();
-        }
-        // Fallback LocalStorage
-        const hero = heroes.find(h => h.id === id);
-        if (hero) {
-            hero.points += points;
-            saveToLocalStorage();
-        }
-        return { success: true, points_added: points };
+    async assignPoints(heroId, points, reason) {
+        const response = await fetch(`${API_PATH}points.php?hero_id=${heroId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ points, reason })
+        });
+        return await response.json();
+    },
+
+    // POST otorgar medalla
+    async awardMedal(heroId, medalData) {
+        const response = await fetch(`${API_PATH}points.php?hero_id=${heroId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                points: 0,
+                reason: `Medalla Otorgada: ${medalData.title} ${medalData.emoji}`
+            })
+        });
+        return await response.json();
     }
 };
 
@@ -201,25 +172,17 @@ document.addEventListener('DOMContentLoaded', async function() {
     }
 });
 
-// Sincronizar datos con el backend si está disponible
+// Sincronizar datos con el backend (PHP)
 async function syncWithBackend() {
-    if (API_CONFIG.useBackend) {
-        try {
-            console.log('Sincronizando con el backend...');
-            const backendHeroes = await heroAPI.getAll();
-            if (backendHeroes && Array.isArray(backendHeroes)) {
-                // Normalizar datos (Prisma usa courseCode, el frontend espera course)
-                heroes = backendHeroes.map(h => ({
-                    ...h,
-                    course: h.courseCode || h.course
-                }));
-                
-                saveToLocalStorage(); // Guardar copia local por si acaso
-                console.log('Sincronización exitosa. Héroes cargados:', heroes.length);
-            }
-        } catch (e) {
-            console.error('Error al sincronizar con el backend:', e);
+    try {
+        const response = await fetch(`${API_PATH}heroes.php`);
+        const data = await response.json();
+        if (Array.isArray(data)) {
+            heroes = data;
+            console.log('Sincronizado con PHP:', heroes.length, 'héroes');
         }
+    } catch (e) {
+        console.error('Error sincronizando con PHP:', e);
     }
 }
 
@@ -563,11 +526,21 @@ function showSection(section) {
 
     if (targetEl) {
         targetEl.style.display = 'block';
-            populateQuickRayos();
-            break;
-        case 'stats':
-            updateStats();
-            break;
+        
+        // Actualizar título de la sección
+        const titleMap = {
+            'dashboard': 'Dashboard General',
+            'management': 'Centro de Control',
+            'ranking': 'Hall de la Fama',
+            'history': 'Auditoría de Acciones'
+        };
+        document.getElementById('sectionTitle').textContent = titleMap[section] || 'Panel de Control';
+
+        // Poblar datos iniciales según la sección
+        if (section === 'dashboard') updateDashboard();
+        if (section === 'management') populateHeroesTable();
+        if (section === 'ranking') updateRankings('daily');
+        if (section === 'history') populatePointsHistory();
     }
 }
 
@@ -926,8 +899,18 @@ async function assignPoints() {
     const heroIds = Array.from(checkboxes).map(cb => parseInt(cb.value));
 
     try {
-        // Enviar al servidor para cada héroe
-        const promises = heroIds.map(id => heroAPI.assignPoints(id, points, reason));
+        // Enviar al servidor PHP
+        const promises = heroIds.map(async (id) => {
+            const hero = heroes.find(h => h.id === id);
+            return await fetch(`${API_PATH}points.php?hero_id=${hero.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    points: points,
+                    reason: reason
+                })
+            });
+        });
         await Promise.all(promises);
 
         // Refrescar datos desde el servidor
@@ -2044,7 +2027,7 @@ async function populateCronLogs() {
 
     // 1. Obtener configuración actual del servidor
     try {
-        const response = await fetch('/api/system/config');
+        const response = await fetch(`${API_PATH}system_config.php`);
         if (!response.ok) throw new Error('Fallo al conectar con el servidor');
         
         const config = await response.json();
@@ -2184,7 +2167,7 @@ async function saveCronConfig() {
 
     try {
         console.log('Enviando configuración:', { cronAmount, cronHour, cronBonus });
-        const response = await fetch('/api/system/config', {
+        const response = await fetch(`${API_PATH}system_config.php`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ cronAmount, cronHour, cronBonus })
@@ -2214,7 +2197,7 @@ async function triggerCronManual() {
 
     try {
         showSuccessAnimation('Iniciando asignación manual...');
-        const response = await fetch('/api/cron/process-rayos', {
+        const response = await fetch(`${API_PATH}cron_process.php?manual=true`, {
             headers: { 'x-manual-trigger': 'true' }
         });
         const data = await response.json();
