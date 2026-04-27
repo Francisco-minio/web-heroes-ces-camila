@@ -1,89 +1,24 @@
-// Academia de Superhéroes - JavaScript Principal
-
-// Variables globales
-let currentView = 'admin'; // 'admin' o 'student'
+// Academia de Superhéroes - Sistema Centralizado PHP
+// Configuración y Variables de Estado
+let currentView = 'admin'; 
 let heroes = [];
 let pointsHistory = [];
 let currentUser = null;
 let currentSystemConfig = null;
-const API_PATH = 'api/'; // Ruta para PHP en cPanel
-let selectedHeroes = [];
-let availableAvatars = ['🦸', '🦹', '🐉', '⚡', '🌪️', '🛡️', '🧙', '🧚', '🦸‍♀️', '🦹‍♀️', '🔥', '💫', '🌟', '💪', '🧠', '❤️'];
-let availableEmojis = ['⭐', '🔥', '💪', '🧠', '❤️', '🌈', '🎯', '🎨', '🌍', '🚀', '🔬', '📚', '🎭', '🏆', '🎪', '🎨'];
-let availableMedals = [
-    { id: 1, name: 'Medalla de Oro', icon: '🥇', description: 'Excelente rendimiento académico' },
-    { id: 2, name: 'Medalla de Plata', icon: '🥈', description: 'Buena participación' },
-    { id: 3, name: 'Medalla de Bronce', icon: '🥉', description: 'Esfuerzo constante' },
-    { id: 4, name: 'Estrella de Honor', icon: '⭐', description: 'Liderazgo' },
-    { id: 5, name: 'Corazón de Héroe', icon: '❤️', description: 'Solidaridad y amistad' },
-    { id: 6, name: 'Mente Brillante', icon: '🧠', description: 'Creatividad e innovación' },
-    { id: 7, name: 'Fuerza Suprema', icon: '💪', description: 'Perseverancia' },
-    { id: 8, name: 'Arcoíris de Talentos', icon: '🌈', description: 'Versatilidad' }
-];
+let isAuthenticated = false;
 
+const API_PATH = 'api/'; // Fuente única de verdad para cPanel
 
-let nextMedalId = 9; // Para generar nuevos IDs
-
-// Configuración de API
-const API_CONFIG = {
-    // Detectar automáticamente si hay backend disponible
-    get useBackend() {
-        return (window.APP_CONFIG && window.APP_CONFIG.USE_PRISMA === true) || 
-               window.location.hostname === 'localhost' ||
-               window.location.hostname.includes('vercel.app');
-    },
-    get baseURL() {
-        return (window.APP_CONFIG && window.APP_CONFIG.API_BASE_URL) || './api';
-    }
-};
-
-// Wrapper para LocalStorage con fallback de memoria (para modo 'file://')
-const safeStorage = {
-    getItem(key) {
-        try {
-            return localStorage.getItem(key);
-        } catch (e) {
-            console.warn('LocalStorage no disponible, usando memoria temporal');
-            return window._tempStorage?.[key] || null;
-        }
-    },
-    setItem(key, value) {
-        try {
-            localStorage.setItem(key, value);
-        } catch (e) {
-            if (!window._tempStorage) window._tempStorage = {};
-            window._tempStorage[key] = value;
-        }
-    },
-    removeItem(key) {
-        try {
-            localStorage.removeItem(key);
-        } catch (e) {
-            if (window._tempStorage) delete window._tempStorage[key];
-        }
-    }
-};
-
-// Hacer safeStorage disponible globalmente para otros scripts (como medals.js)
-window.safeStorage = safeStorage;
-
-
-
-// API Layer - Abstracción para Prisma (Vercel) o LocalStorage
+// API Engine - Abstracción para Backend PHP/MySQL
 const heroAPI = {
-    // GET todos los héroes
     async getAll() {
         const response = await fetch(`${API_PATH}heroes.php`);
         return await response.json();
     },
-
-    // GET un héroe
     async getById(id) {
         const response = await fetch(`${API_PATH}heroes.php?id=${id}`);
         return await response.json();
     },
-
-    // POST crear héroe
     async create(heroData) {
         const response = await fetch(`${API_PATH}heroes.php`, {
             method: 'POST',
@@ -92,8 +27,6 @@ const heroAPI = {
         });
         return await response.json();
     },
-
-    // POST actualizar héroe
     async update(id, heroData) {
         const response = await fetch(`${API_PATH}heroes.php`, {
             method: 'POST',
@@ -102,16 +35,12 @@ const heroAPI = {
         });
         return await response.json();
     },
-
-    // DELETE eliminar héroe
     async delete(id) {
         const response = await fetch(`${API_PATH}heroes.php?id=${id}`, {
             method: 'DELETE'
         });
         return await response.json();
     },
-
-    // POST asignar puntos
     async assignPoints(heroId, points, reason) {
         const response = await fetch(`${API_PATH}points.php?hero_id=${heroId}`, {
             method: 'POST',
@@ -119,31 +48,14 @@ const heroAPI = {
             body: JSON.stringify({ points, reason })
         });
         return await response.json();
-    },
-
-    // POST otorgar medalla
-    async awardMedal(heroId, medalData) {
-        const response = await fetch(`${API_PATH}points.php?hero_id=${heroId}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                points: 0,
-                reason: `Medalla Otorgada: ${medalData.title} ${medalData.emoji}`
-            })
-        });
-        return await response.json();
     }
 };
 
-// Credenciales de autenticación
-// Usar credenciales desde configuración segura con fallback
+// Credenciales Centralizadas
 const ADMIN_CREDENTIALS = {
     get username() { return (window.APP_CONFIG && window.APP_CONFIG.ADMIN_USERNAME) || 'profesor'; },
     get password() { return (window.APP_CONFIG && window.APP_CONFIG.ADMIN_PASSWORD) || 'heroes2024'; }
 };
-
-
-let isAuthenticated = false;
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', async function() {
@@ -235,265 +147,64 @@ function authenticate() {
         authModal.hide();
 
         showAdminDashboard();
-        showSuccessAnimation('¡Bienvenido Profesor!');
+// Autenticación de Profesor
+function authenticate() {
+    const user = document.getElementById('username').value;
+    const pass = document.getElementById('password').value;
 
-        // Limpiar formulario
-        document.getElementById('authForm').reset();
+    if (user === ADMIN_CREDENTIALS.username && pass === ADMIN_CREDENTIALS.password) {
+        isAuthenticated = true;
+        showAdminDashboard();
+        showSuccessAnimation('¡Comando Central Activado!');
+        const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
+        if (modal) modal.hide();
     } else {
-        showErrorAnimation('Credenciales incorrectas. Intenta nuevamente.');
-        document.getElementById('password').value = '';
-        document.getElementById('password').focus();
+        showErrorAnimation('Acceso Denegado. Credenciales incorrectas.');
     }
 }
 
-// Mostrar login de héroe
-function showHeroLogin() {
-    const authModal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
-    authModal.hide();
-
-    const heroLoginModal = new bootstrap.Modal(document.getElementById('heroLoginModal'));
-    heroLoginModal.show();
-}
-
-// Mostrar login de profesor
-function showTeacherLogin() {
-    const heroLoginModal = bootstrap.Modal.getInstance(document.getElementById('heroLoginModal'));
-    heroLoginModal.hide();
-
-    const authModal = new bootstrap.Modal(document.getElementById('authModal'));
-    authModal.show();
-}
-
-// Autenticar héroe
-function authenticateHero() {
-    const username = document.getElementById('heroUsername').value;
-    const password = document.getElementById('heroPassword').value;
-
-    const hero = heroes.find(h => h.username === username && h.password === password);
-
-    if (hero) {
-        currentUser = hero;
-        safeStorage.setItem('currentHeroId', hero.id);
-
-
-        const heroLoginModal = bootstrap.Modal.getInstance(document.getElementById('heroLoginModal'));
-        heroLoginModal.hide();
-
-        showStudentView();
-        showSuccessAnimation(`¡Bienvenido ${hero.heroName}!`);
-
-        // Limpiar formulario
-        document.getElementById('heroLoginForm').reset();
-    } else {
-        showErrorAnimation('Usuario o contraseña incorrectos. Intenta nuevamente.');
-        document.getElementById('heroPassword').value = '';
-        document.getElementById('heroPassword').focus();
-    }
-}
-
-// Mostrar vista de estudiante
-function showStudentView() {
-    document.getElementById('adminDashboard').style.display = 'none';
-    document.getElementById('studentView').style.display = 'block';
-    document.getElementById('toggleViewBtn').style.display = 'none';
-    document.getElementById('logoutBtn').style.display = 'inline-block';
-    document.getElementById('currentUser').textContent = currentUser ? currentUser.heroName : 'Estudiante';
-    currentView = 'student';
-    updateStudentView();
-}
-
-// Cerrar sesión
-function logout() {
-    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-        isAuthenticated = false;
-        safeStorage.setItem('isAuthenticated', 'false');
-        safeStorage.removeItem('currentHeroId');
-        currentUser = null;
-
-
-        document.getElementById('toggleViewBtn').style.display = 'none';
-        document.getElementById('logoutBtn').style.display = 'none';
-
-        showAuthModal();
-        showSuccessAnimation('Sesión cerrada correctamente');
-    }
-}
-
-// Mostrar dashboard de administración
+// Navegación de Vistas
 function showAdminDashboard() {
     document.getElementById('adminDashboard').style.display = 'block';
     document.getElementById('studentView').style.display = 'none';
-    document.getElementById('toggleViewBtn').style.display = 'inline-block';
-    document.getElementById('logoutBtn').style.display = 'inline-block';
-    document.getElementById('currentUser').textContent = 'Profesor';
+    document.getElementById('currentUser').textContent = 'ADMIN';
     currentView = 'admin';
-    showSection('dashboard'); // Mostrar dashboard por defecto
+    showSection('dashboard');
 }
 
-// Mostrar animación de error
-function showErrorAnimation(message) {
-    const div = document.createElement('div');
-    div.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3';
-    div.style.zIndex = '9999';
-    div.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
-    document.body.appendChild(div);
-
-    setTimeout(() => {
-        div.remove();
-    }, 3000);
+function showStudentView() {
+    document.getElementById('adminDashboard').style.display = 'none';
+    document.getElementById('studentView').style.display = 'block';
+    document.getElementById('currentUser').textContent = currentUser?.heroName || 'HERO';
+    currentView = 'student';
 }
 
-// Configurar event listeners
-function setupEventListeners() {
-    // Búsqueda de héroes
-    document.getElementById('searchHero').addEventListener('input', filterHeroes);
-    document.getElementById('filterCourse').addEventListener('change', filterHeroes);
-    document.getElementById('filterPoints').addEventListener('change', filterHeroes);
+function logout() {
+    if (confirm('¿Cerrar sesión en el Comando Central?')) {
+        window.location.reload();
+    }
+}
 
-    // Formulario de nuevo héroe
-    document.getElementById('heroForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        saveHero();
-    });
-
-    // Limpiar formulario al cerrar modal
-    document.getElementById('heroModal').addEventListener('hidden.bs.modal', function() {
-        resetHeroForm();
-    });
-
-    // Formulario de autenticación
-    document.getElementById('authForm').addEventListener('submit', function(e) {
-        e.preventDefault();
-        authenticate();
-    });
-
-    // Enter key en campos de autenticación
-    document.getElementById('username').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            document.getElementById('password').focus();
-        }
-    });
-
-    document.getElementById('password').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            authenticate();
-        }
-    });
-
-    // Filtros de cursos
-    const courseSearch = document.getElementById('courseSearch');
-    if (courseSearch) courseSearch.addEventListener('input', refreshCourseView);
+// Gestión de Cursos
+function populateCourseDropdowns() {
+    const dropdowns = ['heroCourse', 'quickRayosCourseFilter', 'filterCourse'];
+    const courses = window.COURSES_CONFIG || [];
     
-    const courseLevelFilter = document.getElementById('courseLevelFilter');
-    if (courseLevelFilter) courseLevelFilter.addEventListener('change', refreshCourseView);
-}
-
-// Inicializar aplicación
-function initializeApp() {
-    // Si no hay datos, crear datos de ejemplo
-    if (heroes.length === 0) {
-        createSampleData();
-    }
-
-    // Solo establecer usuario simulado si NO hay sesión activa
-    // (para no sobreescribir la sesión restaurada de localStorage)
-    if (!currentUser && !safeStorage.getItem('currentHeroId')) {
-
-        currentUser = heroes[0] || null;
-        if (currentUser) {
-            updateStudentView();
-        }
-    }
-}
-
-// Crear datos de ejemplo
-function createSampleData() {
-    heroes = [{
-            id: 1,
-            realName: 'Ana García',
-            heroName: 'Thunder Girl',
-            course: '1A',
-            specialPower: 'Rayos de conocimiento matemático',
-            avatar: '⚡',
-            points: 120,
-            streak: 5,
-            emojis: ['⭐', '🧠'],
-            medals: [
-                { id: 1, name: 'Medalla de Oro', icon: '🥇', description: 'Excelente rendimiento académico', date: new Date('2024-01-15') },
-                { id: 4, name: 'Estrella de Honor', icon: '⭐', description: 'Liderazgo', date: new Date('2024-01-10') }
-            ],
-            missions: [
-                { icon: '📚', description: 'Completar tarea de matemáticas', points: 20, date: new Date('2024-01-15') },
-                { icon: '🤝', description: 'Ayudar a compañero', points: 15, date: new Date('2024-01-14') }
-            ]
-        },
-        {
-            id: 2,
-            realName: 'Carlos López',
-            heroName: 'Fire Boy',
-            course: '1B',
-            specialPower: 'Fuerza de la lectura',
-            avatar: '🔥',
-            points: 95,
-            streak: 3,
-            emojis: ['🔥', '💪'],
-            medals: [
-                { id: 2, name: 'Medalla de Plata', icon: '🥈', description: 'Buena participación', date: new Date('2024-01-12') }
-            ],
-            missions: [
-                { icon: '🎨', description: 'Excelente dibujo', points: 10, date: new Date('2024-01-15') }
-            ]
-        },
-        {
-            id: 3,
-            realName: 'María Rodríguez',
-            heroName: 'Star Princess',
-            course: '2A',
-            specialPower: 'Creatividad infinita',
-            avatar: '🌟',
-            points: 150,
-            streak: 7,
-            emojis: ['⭐', '🌈'],
-            medals: [
-                { id: 1, name: 'Medalla de Oro', icon: '🥇', description: 'Excelente rendimiento académico', date: new Date('2024-01-15') },
-                { id: 6, name: 'Mente Brillante', icon: '🧠', description: 'Creatividad e innovación', date: new Date('2024-01-13') },
-                { id: 8, name: 'Arcoíris de Talentos', icon: '🌈', description: 'Versatilidad', date: new Date('2024-01-08') }
-            ],
-            missions: [
-                { icon: '🎭', description: 'Mejor presentación oral', points: 25, date: new Date('2024-01-15') },
-                { icon: '📝', description: 'Redacción perfecta', points: 20, date: new Date('2024-01-14') }
-            ]
-        }
-    ];
-
-    saveToLocalStorage();
-}
-
-// Cambiar entre vistas
-function toggleView() {
-    if (!isAuthenticated) {
-        showAuthModal();
-        return;
-    }
-
-    const adminView = document.getElementById('adminDashboard');
-    const studentView = document.getElementById('studentView');
-    const currentUserSpan = document.getElementById('currentUser');
-
-    if (currentView === 'admin') {
-        adminView.style.display = 'none';
-        studentView.style.display = 'block';
-        currentUserSpan.textContent = currentUser ? currentUser.heroName : 'Estudiante';
-        currentView = 'student';
-        updateStudentView();
-    } else {
-        adminView.style.display = 'block';
-        studentView.style.display = 'none';
-        currentUserSpan.textContent = 'Profesor';
-        currentView = 'admin';
-    }
+    dropdowns.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        
+        const currentVal = el.value;
+        el.innerHTML = id === 'heroCourse' ? '' : '<option value="">Todos los Cursos</option>';
+        
+        courses.forEach(c => {
+            const opt = document.createElement('option');
+            opt.value = c.id;
+            opt.textContent = c.name;
+            el.appendChild(opt);
+        });
+        if (currentVal) el.value = currentVal;
+    });
 }
 
 // Cambiar de sección en el panel
@@ -833,134 +544,7 @@ function populateIconsLibrary() {
     populateMedalsHistory();
 }
 
-// Guardar héroe (nuevo o actualizado)
-async function saveHero() {
-    const realName = document.getElementById('realName').value;
-    const heroName = document.getElementById('heroName').value;
-    const course = document.getElementById('course').value;
-    const specialPower = document.getElementById('specialPower').value;
-    const heroUsername = document.getElementById('newHeroUsername').value.trim();
-    const heroPassword = document.getElementById('newHeroPassword').value;
-    const selectedAvatar = document.querySelector('.avatar-option.selected');
-
-    if (!realName || !heroName || !course) {
-        alert('Por favor completa todos los campos requeridos');
-        return;
-    }
-
-    // Verificar si estamos editando o creando
-    const isEditing = window.editingHeroId !== undefined;
-
-    // Solo requerir username/password para nuevos héroes o si se están proporcionando
-    if (!isEditing && (!heroUsername || !heroPassword)) {
-        alert('Por favor ingresa el nombre de usuario y contraseña para el login del alumno');
-        return;
-    }
-
-    // Obtener datos actuales si estamos editando
-    const existingHero = isEditing ? heroes.find(h => h.id === window.editingHeroId) : null;
-
-    const heroData = {
-        realName,
-        heroName,
-        course,
-        specialPower,
-        username: heroUsername || (existingHero ? existingHero.username : undefined),
-        password: heroPassword || (existingHero ? existingHero.password : undefined),
-        avatar: selectedAvatar ? selectedAvatar.innerHTML : (existingHero ? existingHero.avatar : '🦸'),
-        medals: existingHero ? existingHero.medals : [],
-        emojis: existingHero ? existingHero.emojis : [],
-        points: existingHero ? existingHero.points : 0,
-        streak: existingHero ? existingHero.streak : 0
-    };
-
-    try {
-        if (isEditing) {
-            await heroAPI.update(window.editingHeroId, heroData);
-            showSuccessAnimation('¡Héroe actualizado exitosamente!');
-        } else {
-            const result = await heroAPI.create(heroData);
-            showSuccessAnimation(`¡Nuevo héroe agregado! <br>Usuario: ${heroUsername} <br>Contraseña: ${heroPassword}`);
-        }
-
-        // Refrescar datos desde el servidor
-        await syncWithBackend();
-        populateHeroesTable();
-        updateStats();
-
-        // Cerrar modal y limpiar formulario
-        const modal = bootstrap.Modal.getInstance(document.getElementById('heroModal'));
-        modal.hide();
-        resetHeroForm();
-    } catch (e) {
-        console.error('Error al guardar:', e);
-        showErrorAnimation('No se pudo guardar en el servidor. Revisa la conexión.');
-    }
-}
-
-// Resetear formulario de héroe
-function resetHeroForm() {
-    document.getElementById('heroForm').reset();
-    document.getElementById('newHeroUsername').value = '';
-    document.getElementById('newHeroPassword').value = '';
-    document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
-    window.editingHeroId = undefined;
-
-    // Restaurar título y botón del modal
-    document.querySelector('#heroModal .modal-title').innerHTML = '<i class="fas fa-plus"></i> Nuevo Superhéroe';
-    document.querySelector('#heroModal .modal-footer .btn-primary').innerHTML = '<i class="fas fa-save"></i> Guardar Héroe';
-}
-
-// Editar héroe
-function editHero(id) {
-    const hero = heroes.find(h => h.id === id);
-    if (!hero) return;
-
-    // Guardar el ID del héroe que se está editando
-    window.editingHeroId = id;
-
-    // Llenar formulario con datos del héroe
-    document.getElementById('realName').value = hero.realName;
-    document.getElementById('heroName').value = hero.heroName;
-    document.getElementById('course').value = hero.course;
-    document.getElementById('specialPower').value = hero.specialPower;
-    document.getElementById('newHeroUsername').value = hero.username || '';
-    document.getElementById('newHeroPassword').value = hero.password || '';
-
-    // Seleccionar avatar
-    document.querySelectorAll('.avatar-option').forEach(el => {
-        el.classList.remove('selected');
-        if (el.innerHTML === hero.avatar) {
-            el.classList.add('selected');
-        }
-    });
-
-    // Cambiar título del modal
-    document.querySelector('#heroModal .modal-title').innerHTML = '<i class="fas fa-edit"></i> Editar Superhéroe';
-
-    // Cambiar texto del botón
-    document.querySelector('#heroModal .modal-footer .btn-primary').innerHTML = '<i class="fas fa-save"></i> Actualizar Héroe';
-
-    // Mostrar modal
-    const modal = new bootstrap.Modal(document.getElementById('heroModal'));
-    modal.show();
-}
-
-// ...
-// Eliminar héroe
-async function deleteHero(id) {
-    if (confirm('¿Estás seguro de que quieres eliminar a este héroe?')) {
-        try {
-            await heroAPI.delete(id);
-            await syncWithBackend();
-            populateHeroesTable();
-            updateStats();
-            showSuccessAnimation('Héroe eliminado');
-        } catch (e) {
-            showErrorAnimation('Error al eliminar');
-        }
-    }
-}
+// Las funciones de gestión ya están definidas arriba
 
 // Asignar puntos
 async function assignPoints() {
