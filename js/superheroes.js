@@ -1811,15 +1811,13 @@ async function confirmQuickAdjust() {
     
     try {
         if (true) {
-            await heroAPI.update(heroId, { 
-                points: hero.points,
-                pointsHistory: {
-                    create: {
-                        points: amount,
-                        reason: reason,
-                        date: new Date()
-                    }
-                }
+            await fetch(`${API_PATH}points.php?hero_id=${heroId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    points: amount,
+                    reason: reason
+                })
             });
             // Sincronizar para asegurar coherencia
             await syncWithBackend();

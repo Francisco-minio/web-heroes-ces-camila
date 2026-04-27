@@ -48,19 +48,29 @@ try {
 
             // Lógica de Guardar/Actualizar
             if (isset($data['id']) && $data['id'] > 0) {
-                // Update
-                $sql = "UPDATE heroes SET heroName = ?, realName = ?, username = ?, password = ?, course = ?, superPower = ?, avatar = ? WHERE id = ?";
-                $stmt = $pdo->prepare($sql);
-                $stmt->execute([
-                    $data['heroName'], 
-                    $data['realName'], 
-                    isset($data['username']) ? $data['username'] : '',
-                    isset($data['password']) ? $data['password'] : '',
-                    isset($data['course']) ? $data['course'] : '', 
-                    isset($data['superPower']) ? $data['superPower'] : '', 
-                    isset($data['avatar']) ? $data['avatar'] : '🦸', 
-                    $data['id']
-                ]);
+                // Update dinámico
+                $fields = [];
+                $params = [];
+                $allowed = ['heroName', 'realName', 'username', 'password', 'course', 'superPower', 'avatar', 'points', 'streak', 'medals'];
+                
+                foreach ($allowed as $field) {
+                    if (isset($data[$field])) {
+                        $fields[] = "$field = ?";
+                        if ($field === 'medals') {
+                            $params[] = is_array($data[$field]) ? json_encode($data[$field]) : $data[$field];
+                        } else {
+                            $params[] = $data[$field];
+                        }
+                    }
+                }
+                
+                if (count($fields) > 0) {
+                    $sql = "UPDATE heroes SET " . implode(', ', $fields) . " WHERE id = ?";
+                    $params[] = $data['id'];
+                    $stmt = $pdo->prepare($sql);
+                    $stmt->execute($params);
+                }
+                
                 echo json_encode(["success" => true, "id" => $data['id']]);
             } else {
                 // Create
