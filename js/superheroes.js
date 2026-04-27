@@ -218,10 +218,16 @@ function authenticateHero() {
 // Navegación de Vistas
 function showAdminDashboard() {
     const sidebar = document.getElementById('sidebar');
+    const topbar = document.querySelector('.hero-topbar');
     const mainWrapper = document.querySelector('.main-wrapper');
     
     if (sidebar) sidebar.style.display = 'flex';
-    if (mainWrapper) mainWrapper.style.display = 'block';
+    if (topbar) topbar.style.display = 'flex';
+    if (mainWrapper) {
+        mainWrapper.style.display = 'block';
+        mainWrapper.style.marginLeft = ''; // Restaura valor del CSS
+        mainWrapper.style.paddingTop = ''; // Restaura valor del CSS
+    }
     
     // Ocultar vista de estudiante y mostrar dashboard
     const studentView = document.getElementById('studentView');
@@ -233,10 +239,16 @@ function showAdminDashboard() {
 
 function showStudentView() {
     const sidebar = document.getElementById('sidebar');
+    const topbar = document.querySelector('.hero-topbar');
     const mainWrapper = document.querySelector('.main-wrapper');
     
     if (sidebar) sidebar.style.display = 'none';
-    if (mainWrapper) mainWrapper.style.display = 'block';
+    if (topbar) topbar.style.display = 'none'; // Ocultar la barra del profesor
+    if (mainWrapper) {
+        mainWrapper.style.display = 'block';
+        mainWrapper.style.marginLeft = '0'; // Quitar margen del sidebar
+        mainWrapper.style.paddingTop = '20px'; // Reducir padding superior
+    }
     
     // Ocultar todas las secciones de admin y mostrar studentView
     document.querySelectorAll('.content-section').forEach(s => s.style.display = 'none');
