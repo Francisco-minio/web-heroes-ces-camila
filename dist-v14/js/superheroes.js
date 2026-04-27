@@ -20,25 +20,6 @@ const safeStorage = {
     }
 };
 
-// Notificaciones Visuales
-function showSuccessAnimation(message) {
-    const div = document.createElement('div');
-    div.className = 'alert alert-success position-fixed top-0 start-50 translate-middle-x mt-3 hero-glow-green';
-    div.style.zIndex = '9999';
-    div.innerHTML = `<i class="fas fa-check-circle"></i> ${message}`;
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 3000);
-}
-
-function showErrorAnimation(message) {
-    const div = document.createElement('div');
-    div.className = 'alert alert-danger position-fixed top-0 start-50 translate-middle-x mt-3 hero-glow-red';
-    div.style.zIndex = '9999';
-    div.innerHTML = `<i class="fas fa-exclamation-triangle"></i> ${message}`;
-    document.body.appendChild(div);
-    setTimeout(() => div.remove(), 3000);
-}
-
 const API_PATH = 'api/'; 
 
 // Catálogo Visual

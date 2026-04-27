@@ -12,8 +12,8 @@ try {
     
     if (!$config) {
         // Crear configuración por defecto si no existe
-        $pdo->query("INSERT INTO system_config (id, cronAmount, cronHour, cronBonus) VALUES (1, 3, 5, 3)");
-        $config = ["cronAmount" => 3, "cronHour" => 5, "cronBonus" => 3, "lastRun" => null];
+        $pdo->query("INSERT INTO system_config (id, cron_amount, cron_hour, cron_bonus) VALUES (1, 3, 5, 3)");
+        $config = ["cron_amount" => 3, "cron_hour" => 5, "cron_bonus" => 3, "last_cron_run" => null];
     }
 
     $today = date('Y-m-d H:i:s');
@@ -21,8 +21,8 @@ try {
     $isSunday = (date('N') == 7);
     
     // Verificar si ya se ejecutó hoy
-    if ($config['lastRun']) {
-        $lastRun = date('Y-m-d', strtotime($config['lastRun']));
+    if ($config['last_cron_run']) {
+        $lastRun = date('Y-m-d', strtotime($config['last_cron_run']));
         if ($lastRun === date('Y-m-d') && !isset($_GET['manual'])) {
             echo json_encode(["skip" => true, "reason" => "Ya se ejecutó hoy"]);
             exit;
@@ -30,11 +30,11 @@ try {
     }
 
     // Cantidad a asignar
-    $amount = intval($config['cronAmount']);
+    $amount = intval($config['cron_amount']);
     $reason = 'Asignación diaria automática (⚡)';
 
     if ($isSunday) {
-        $amount += intval($config['cronBonus']);
+        $amount += intval($config['cron_bonus']);
         $reason = 'Asignación semanal (⚡) + Diaria';
     }
 
@@ -54,7 +54,7 @@ try {
     }
 
     // 3. Actualizar fecha de última ejecución
-    $pdo->query("UPDATE system_config SET lastRun = NOW() WHERE id = 1");
+    $pdo->query("UPDATE system_config SET last_cron_run = NOW() WHERE id = 1");
 
     $pdo->commit();
 

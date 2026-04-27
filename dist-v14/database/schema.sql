@@ -25,10 +25,10 @@ CREATE TABLE IF NOT EXISTS `points_history` (
 
 CREATE TABLE IF NOT EXISTS `system_config` (
   `id` int(11) NOT NULL DEFAULT 1,
-  `cronAmount` int(11) DEFAULT 3,
-  `cronHour` int(11) DEFAULT 5,
-  `cronBonus` int(11) DEFAULT 3,
-  `lastRun` datetime DEFAULT NULL,
+  `cron_amount` int(11) DEFAULT 3,
+  `cron_hour` int(11) DEFAULT 5,
+  `cron_bonus` int(11) DEFAULT 3,
+  `last_cron_run` datetime DEFAULT NULL,
   `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

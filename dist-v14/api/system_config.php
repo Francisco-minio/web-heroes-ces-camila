@@ -16,7 +16,7 @@ try {
     } 
     elseif ($method === 'POST') {
         $data = json_decode(file_get_contents('php://input'), true);
-        $stmt = $pdo->prepare("UPDATE system_config SET cronAmount = ?, cronHour = ?, cronBonus = ? WHERE id = 1");
+        $stmt = $pdo->prepare("UPDATE system_config SET cron_amount = ?, cron_hour = ?, cron_bonus = ? WHERE id = 1");
         $stmt->execute([
             intval($data['cronAmount']), 
             intval($data['cronHour']), 

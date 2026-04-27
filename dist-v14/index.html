@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Version: 1.1.0 - Next-Gen UI Update -->
+    <meta name="description" content="Academia de Superhéroes - Sistema de gamificación educativa avanzada.">
+    <title>Academia de Superhéroes </title>
+    
+    <!-- Fonts & Icons -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Bangers&display=swap" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="css/superheroes.css">
+</head>
+<body class="admin-body">
+
+    <!-- Sidebar Navegación -->
+    <nav class="hero-sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo-container">
+                <i class="fas fa-mask fa-2x text-warning"></i>
+                <span class="hero-title ms-2">ACADEMIA</span>
+            </div>
+        </div>
+
+        <div class="sidebar-menu mt-4">
+            <div class="menu-label">Principal</div>
+            <button class="menu-item active" onclick="showSection('dashboard')">
+                <i class="fas fa-th-large"></i> <span>Dashboard</span>
+            </button>
+            
+            <div class="menu-label">Gestión</div>
+            <button class="menu-item" onclick="showSection('management')">
+                <i class="fas fa-user-shield"></i> <span>Centro de Control</span>
+            </button>
+            
+            <div class="menu-label">Academia</div>
+            <button class="menu-item" onclick="showSection('ranking')">
+                <i class="fas fa-trophy"></i> <span>Hall de la Fama</span>
+            </button>
+            <button class="menu-item" onclick="showSection('history')">
+                <i class="fas fa-history"></i> <span>Auditoría</span>
+            </button>
+        </div>
+
+        <div class="sidebar-footer">
+            <button class="btn btn-danger btn-sm w-100" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i> Cerrar Sesión
+            </button>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <main class="main-wrapper">
+        <!-- Topbar -->
+        <header class="hero-topbar">
+            <div class="d-flex align-items-center">
+                <button id="sidebarToggle" class="btn btn-link text-white d-md-none me-3">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h4 class="mb-0" id="sectionTitle">Panel de Control</h4>
+            </div>
+            <div class="user-profile">
+                <span class="badge bg-warning text-dark me-2">PROFESOR</span>
+                <div class="profile-avatar">👨‍🏫</div>
+            </div>
+        </header>
+
+        <div class="container-fluid p-4">
+            
+            <!-- SECCIÓN: DASHBOARD (GLOBAL OVERVIEW) -->
+            <section id="dashboardSection" class="content-section">
+                <!-- Stats Grid -->
+                <div class="row g-4 mb-4">
+                    <div class="col-md-3">
+                        <div class="stats-card bg-glass-blue">
+                            <div class="icon"><i class="fas fa-users"></i></div>
+                            <div class="data">
+                                <h3 id="totalHeroes">0</h3>
+                                <p>Héroes Activos</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-glass-yellow">
+                            <div class="icon"><i class="fas fa-bolt"></i></div>
+                            <div class="data">
+                                <h3 id="totalPoints">0</h3>
+                                <p>Rayos Totales</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-glass-green">
+                            <div class="icon"><i class="fas fa-fire"></i></div>
+                            <div class="data">
+                                <h3 id="activeMissions">0</h3>
+                                <p>Misiones Listas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card bg-glass-red">
+                            <div class="icon"><i class="fas fa-medal"></i></div>
+                            <div class="data">
+                                <h3 id="topHeroName">--</h3>
+                                <p>Líder Actual</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="row g-4">
+                    <!-- Quick Ranking -->
+                    <div class="col-lg-8">
+                        <div class="card h-100 border-0">
+                            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0 hero-title"><i class="fas fa-star text-warning"></i> Top 5 Aspirantes</h5>
+                                <button class="btn btn-link btn-sm text-decoration-none" onclick="showSection('ranking')">Ver todos</button>
+                            </div>
+                            <div class="card-body">
+                                <div id="top5RankingList" class="ranking-compact">
+                                    <!-- Dinámico -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Recent Activity -->
+                    <div class="col-lg-4">
+                        <div class="card h-100 border-0">
+                            <div class="card-header">
+                                <h5 class="mb-0 hero-title"><i class="fas fa-rss text-info"></i> Actividad</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush bg-transparent" id="recentActivityList">
+                                    <!-- Dinámico -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+            
+            <!-- SECCIÓN: PANEL DEL ESTUDIANTE (VISTA INDIVIDUAL) -->
+            <section id="studentView" class="content-section" style="display: none;">
+                <div class="row g-4">
+                    <!-- Perfil del Héroe -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 bg-glass-dark text-center p-4">
+                            <div id="studentAvatar" class="display-1 mb-3 hero-glow">🦸</div>
+                            <h2 id="studentHeroName" class="hero-title text-info mb-1">Cargando...</h2>
+                            <p class="text-muted small">Superhéroe en Entrenamiento</p>
+                            <hr class="border-secondary">
+                            <div class="d-flex justify-content-around mt-3">
+                                <div>
+                                    <h4 id="studentPoints" class="text-warning mb-0">0</h4>
+                                    <p class="xsmall text-muted mb-0">Rayos ⚡</p>
+                                </div>
+                                <div>
+                                    <h4 id="studentMedalsCount" class="text-info mb-0">0</h4>
+                                    <p class="xsmall text-muted mb-0">Medallas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Medallas y Logros -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 mb-4">
+                            <div class="card-header bg-transparent border-0 d-flex justify-content-between">
+                                <h5 class="hero-title mb-0"><i class="fas fa-medal text-warning"></i> Mis Medallas</h5>
+                                <span class="badge bg-glass-blue">Colección</span>
+                            </div>
+                            <div class="card-body">
+                                <div id="studentMedalsGrid" class="row g-3">
+                                    <!-- Dinámico -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Historial de Actividad -->
+                        <div class="card border-0">
+                            <div class="card-header bg-transparent border-0">
+                                <h5 class="hero-title mb-0"><i class="fas fa-history text-info"></i> Mis Últimas Hazañas</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush bg-transparent" id="studentHistoryList">
+                                    <!-- Dinámico -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: CENTRO DE GESTIÓN (TABS) -->
+            <section id="managementSection" class="content-section" style="display: none;">
+                <div class="card border-0">
+                    <div class="card-header p-0">
+                        <ul class="nav nav-tabs nav-justified bg-dark-soft border-0" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link active py-3" data-bs-toggle="tab" href="#tabHeroes" onclick="populateHeroesTable()">
+                                    <i class="fas fa-user-plus me-2"></i> Estudiantes
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link py-3" data-bs-toggle="tab" href="#tabCourses" onclick="refreshCourseView()">
+                                    <i class="fas fa-graduation-cap me-2"></i> Cursos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link py-3" data-bs-toggle="tab" href="#tabQuickRayos" onclick="populateQuickRayos()">
+                                    <i class="fas fa-bolt me-2"></i> Panel de Rayos
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link py-3" data-bs-toggle="tab" href="#tabCron" onclick="populateCronLogs()">
+                                    <i class="fas fa-clock me-2"></i> Automatización
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                    <div class="card-body">
+                        <div class="tab-content">
+                            <!-- TAB: ESTUDIANTES -->
+                            <div class="tab-pane fade show active" id="tabHeroes">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <h5 class="mb-0">Lista de Héroes</h5>
+                                    <button class="btn btn-primary" onclick="showAddHeroForm()">
+                                        <i class="fas fa-plus"></i> Nuevo Héroe
+                                    </button>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover align-middle" id="heroesTable">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Avatar</th>
+                                                <th>Nombre Real</th>
+                                                <th>Superhéroe</th>
+                                                <th>Curso</th>
+                                                <th>Rayos</th>
+                                                <th>Acciones</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="heroesTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB: CURSOS -->
+                            <div class="tab-pane fade" id="tabCourses">
+                                <div id="coursesViewContent">
+                                    <!-- Dinámico de js/superheroes.js -->
+                                </div>
+                            </div>
+
+                            <!-- TAB: RAYOS RÁPIDOS -->
+                            <div class="tab-pane fade" id="tabQuickRayos">
+                                <div class="d-flex justify-content-between mb-3">
+                                    <input type="text" class="form-control w-25" id="quickRayosSearch" placeholder="Filtrar héroe..." onkeyup="populateQuickRayos()">
+                                    <select class="form-select w-25" id="quickRayosCourseFilter" onchange="populateQuickRayos()"></select>
+                                </div>
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead class="table-dark">
+                                            <tr>
+                                                <th>Héroe</th>
+                                                <th>Curso</th>
+                                                <th class="text-center">Rayos (⚡)</th>
+                                                <th class="text-center">Acciones (+ / -)</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="quickRayosTableBody"></tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- TAB: AUTOMATIZACIÓN (CRON) -->
+                            <div class="tab-pane fade" id="tabCron">
+                                <div class="row g-4">
+                                    <div class="col-md-5">
+                                        <div class="card bg-glass-dark text-white">
+                                            <div class="card-body" id="cronConfigDisplay">
+                                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                                    <h6 class="mb-0">Configuración</h6>
+                                                    <button class="btn btn-outline-warning btn-sm" onclick="toggleCronEdit(true)">Editar</button>
+                                                </div>
+                                                <h2 id="displayCronHour" class="hero-title text-warning">--:--</h2>
+                                                <p id="displayCronAmount" class="mb-1">-- Rayos diarios</p>
+                                                <p id="displayCronBonus" class="small text-muted">+-- Bono Domingo</p>
+                                                <button class="btn btn-warning w-100 mt-3" onclick="triggerCronManual()">Ejecutar Manual</button>
+                                            </div>
+                                            <!-- Form oculto -->
+                                            <div class="card-body" id="cronConfigEdit" style="display: none;">
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Hora (0-23)</label>
+                                                    <input type="number" class="form-control" id="inputCronHour">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Rayos diarios</label>
+                                                    <input type="number" class="form-control" id="inputCronAmount">
+                                                </div>
+                                                <div class="mb-3">
+                                                    <label class="form-label small">Bono dominical extra</label>
+                                                    <input type="number" class="form-control" id="inputCronBonus">
+                                                </div>
+                                                <div class="d-flex gap-2">
+                                                    <button class="btn btn-secondary flex-grow-1" onclick="toggleCronEdit(false)">X</button>
+                                                    <button class="btn btn-success flex-grow-1" onclick="saveCronConfig()">OK</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-7">
+                                        <h6>Historial Reciente</h6>
+                                        <div class="table-responsive">
+                                            <table class="table table-sm table-dark-soft">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Fecha</th>
+                                                        <th>Rayos</th>
+                                                        <th>Detalle</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="cronLogsBody"></tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: RANKING GLOBAL -->
+            <section id="rankingSection" class="content-section" style="display: none;">
+                <div class="card border-0">
+                    <div class="card-header bg-hero text-white">
+                        <h5 class="hero-title mb-0">Ranking General de Aspirantes</h5>
+                    </div>
+                    <div class="card-body">
+                        <ul class="nav nav-pills mb-4">
+                            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#dailyRanking" onclick="updateRankings('daily')">Diario</a></li>
+                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#weeklyRanking" onclick="updateRankings('weekly')">Semanal</a></li>
+                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#monthlyRanking" onclick="updateRankings('monthly')">Mensual</a></li>
+                            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#generalRanking" onclick="updateRankings('general')">Histórico</a></li>
+                        </ul>
+                        <div class="tab-content">
+                            <div class="tab-pane fade show active" id="dailyRanking">
+                                <div id="dailyRankingList" class="ranking-grid"></div>
+                            </div>
+                            <div class="tab-pane fade" id="weeklyRanking">
+                                <div id="weeklyRankingList" class="ranking-grid"></div>
+                            </div>
+                            <div class="tab-pane fade" id="monthlyRanking">
+                                <div id="monthlyRankingList" class="ranking-grid"></div>
+                            </div>
+                            <div class="tab-pane fade" id="generalRanking">
+                                <div id="generalRankingList" class="ranking-grid"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- SECCIÓN: AUDITORÍA / HISTORIAL -->
+            <section id="historySection" class="content-section" style="display: none;">
+                <div class="card border-0">
+                    <div class="card-header bg-dark text-white">
+                        <h5 class="hero-title mb-0">Auditoría de Acciones</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Fecha</th>
+                                        <th>Héroes</th>
+                                        <th>Motivo</th>
+                                        <th>Variación</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="pointsHistoryBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+        </div>
+    </main>
+
+    <!-- Modal: Autenticación (Dual) -->
+    <div class="modal fade" id="authModal" data-bs-backdrop="static" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content bg-glass-dark border-info">
+                <div class="modal-body p-4">
+                    <div class="text-center mb-4">
+                        <div class="display-1 mb-2">🛡️</div>
+                        <h3 class="hero-title">Academia de Héroes</h3>
+                    </div>
+                    
+                    <!-- Tabs de Login -->
+                    <ul class="nav nav-pills nav-justified mb-4" role="tablist">
+                        <li class="nav-item">
+                            <button class="nav-link active" data-bs-toggle="pill" data-bs-target="#loginEstudiante">Soy Estudiante</button>
+                        </li>
+                        <li class="nav-item">
+                            <button class="nav-link" data-bs-toggle="pill" data-bs-target="#loginProfesor">Soy Profesor</button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content">
+                        <!-- Login Estudiante -->
+                        <div class="tab-pane fade show active" id="loginEstudiante">
+                            <div class="mb-3">
+                                <label class="form-label small">Nombre de Superhéroe</label>
+                                <input type="text" id="heroUsername" class="form-control" placeholder="Tu nombre heroico">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Clave Secreta</label>
+                                <input type="password" id="heroPassword" class="form-control" placeholder="••••">
+                            </div>
+                            <button class="btn btn-info w-100 py-2 fw-bold" onclick="authenticateHero()">Entrar al Cuartel ⚡</button>
+                        </div>
+
+                        <!-- Login Profesor -->
+                        <div class="tab-pane fade" id="loginProfesor">
+                            <div class="mb-3">
+                                <label class="form-label small">Usuario Admin</label>
+                                <input type="text" id="username" class="form-control">
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label small">Contraseña</label>
+                                <input type="password" id="password" class="form-control">
+                            </div>
+                            <button class="btn btn-primary w-100 py-2 fw-bold" onclick="authenticate()">Acceso Maestro 👨‍🏫</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Razón de Rayos Rápido -->
+    <div class="modal fade" id="quickRayosReasonModal" tabindex="-1">
+        <div class="modal-dialog modal-sm modal-dialog-centered">
+            <div class="modal-content bg-glass-dark text-white border-warning">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title hero-title">Confirmar Acción</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="quickRayosAmountSummary" class="display-6 mb-3 fw-bold"></div>
+                    <input type="text" class="form-control" id="quickRayosReasonInput" placeholder="¿Por qué este cambio?">
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-success w-100" onclick="confirmQuickAdjust()">Guardar Cambio</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALES -->
+    <!-- Modal: Agregar/Editar Héroe -->
+    <div class="modal fade" id="heroModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title hero-title" id="heroModalLabel">Registrar Nuevo Héroe</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="heroForm">
+                        <input type="hidden" id="heroId">
+                        <div class="row g-3">
+                            <div class="col-md-4 text-center">
+                                <div id="heroAvatarDisplay" class="hero-avatar mb-3" onclick="toggleEmojiSelector()">🦸</div>
+                                <div id="emojiSelector" class="card bg-dark p-2" style="display: none;">
+                                    <!-- Emojis dinámicos -->
+                                </div>
+                                <label class="small text-muted">Haz clic para cambiar avatar</label>
+                            </div>
+                            <div class="col-md-8">
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre Real</label>
+                                    <input type="text" class="form-control" id="realName" required>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label">Nombre de Superhéroe</label>
+                                    <input type="text" class="form-control" id="heroName" required>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Curso</label>
+                                        <select class="form-select" id="heroCourse" required></select>
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label class="form-label">Superpoder</label>
+                                        <input type="text" class="form-control" id="superPower" placeholder="Ej: Vuelo, Fuerza...">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="button" class="btn btn-primary" onclick="saveHero()">Guardar Héroe</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Gestión de Medallas -->
+    <div class="modal fade" id="awardMedalModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title hero-title">Otorgar Medalla</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="small text-muted">Selecciona un logro para <span id="medalHeroName" class="fw-bold text-info"></span></p>
+                    <div class="row g-3" id="availableMedalsGrid">
+                        <!-- Medallas dinámicas -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/superheroes.js"></script>
+</body>
+</html>
