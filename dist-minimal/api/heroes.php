@@ -49,13 +49,11 @@ try {
             // Lógica de Guardar/Actualizar
             if (isset($data['id']) && $data['id'] > 0) {
                 // Update
-                $sql = "UPDATE heroes SET heroName = ?, realName = ?, username = ?, password = ?, course = ?, superPower = ?, avatar = ? WHERE id = ?";
+                $sql = "UPDATE heroes SET heroName = ?, realName = ?, course = ?, superPower = ?, avatar = ? WHERE id = ?";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     $data['heroName'], 
                     $data['realName'], 
-                    $data['username'] ?? '',
-                    $data['password'] ?? '',
                     $data['course'] ?? '', 
                     $data['superPower'] ?? '', 
                     $data['avatar'] ?? '🦸', 
@@ -64,13 +62,11 @@ try {
                 echo json_encode(["success" => true, "id" => $data['id']]);
             } else {
                 // Create
-                $sql = "INSERT INTO heroes (heroName, realName, username, password, course, superPower, avatar, points, streak) VALUES (?, ?, ?, ?, ?, ?, ?, 0, 0)";
+                $sql = "INSERT INTO heroes (heroName, realName, course, superPower, avatar, points, streak) VALUES (?, ?, ?, ?, ?, 0, 0)";
                 $stmt = $pdo->prepare($sql);
                 $stmt->execute([
                     $data['heroName'], 
                     $data['realName'], 
-                    $data['username'] ?? '',
-                    $data['password'] ?? '',
                     $data['course'] ?? '', 
                     $data['superPower'] ?? '', 
                     $data['avatar'] ?? '🦸'

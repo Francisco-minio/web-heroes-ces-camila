@@ -497,7 +497,6 @@ async function editHero(id) {
             document.getElementById('heroName').value = hero.heroName;
             document.getElementById('heroCourse').value = hero.course || '';
             document.getElementById('superPower').value = hero.superPower || '';
-            document.getElementById('heroNewPassword').value = hero.password || '';
             document.getElementById('heroAvatarDisplay').textContent = hero.avatar || '🦸';
             document.getElementById('heroModalLabel').textContent = 'Editar Héroe';
             
@@ -515,8 +514,6 @@ async function saveHero() {
     const heroData = {
         realName: document.getElementById('realName').value,
         heroName: document.getElementById('heroName').value,
-        username: document.getElementById('heroName').value.toLowerCase().replace(/\s+/g, ''),
-        password: document.getElementById('heroNewPassword').value,
         course: document.getElementById('heroCourse').value,
         superPower: document.getElementById('superPower').value,
         avatar: document.getElementById('heroAvatarDisplay').textContent

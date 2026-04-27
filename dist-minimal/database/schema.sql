@@ -1,18 +1,9 @@
 -- Estructura de Base de Datos para cPanel (MySQL)
 
-CREATE TABLE IF NOT EXISTS `courses` (
-  `id` varchar(50) NOT NULL,
-  `name` varchar(100) NOT NULL,
-  `level` varchar(50) DEFAULT 'Básico',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
 CREATE TABLE IF NOT EXISTS `heroes` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `heroName` varchar(255) NOT NULL,
   `realName` varchar(255) NOT NULL,
-  `username` varchar(100) DEFAULT NULL,
-  `password` varchar(100) DEFAULT NULL,
   `course` varchar(100) DEFAULT NULL,
   `superPower` varchar(255) DEFAULT NULL,
   `avatar` varchar(50) DEFAULT '🦸',
