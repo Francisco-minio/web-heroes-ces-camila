@@ -143,6 +143,58 @@
                     </div>
                 </div>
             </section>
+            
+            <!-- SECCIÓN: PANEL DEL ESTUDIANTE (VISTA INDIVIDUAL) -->
+            <section id="studentView" class="content-section" style="display: none;">
+                <div class="row g-4">
+                    <!-- Perfil del Héroe -->
+                    <div class="col-lg-4">
+                        <div class="card border-0 bg-glass-dark text-center p-4">
+                            <div id="studentAvatar" class="display-1 mb-3 hero-glow">🦸</div>
+                            <h2 id="studentHeroName" class="hero-title text-info mb-1">Cargando...</h2>
+                            <p class="text-muted small">Superhéroe en Entrenamiento</p>
+                            <hr class="border-secondary">
+                            <div class="d-flex justify-content-around mt-3">
+                                <div>
+                                    <h4 id="studentPoints" class="text-warning mb-0">0</h4>
+                                    <p class="xsmall text-muted mb-0">Rayos ⚡</p>
+                                </div>
+                                <div>
+                                    <h4 id="studentMedalsCount" class="text-info mb-0">0</h4>
+                                    <p class="xsmall text-muted mb-0">Medallas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Medallas y Logros -->
+                    <div class="col-lg-8">
+                        <div class="card border-0 mb-4">
+                            <div class="card-header bg-transparent border-0 d-flex justify-content-between">
+                                <h5 class="hero-title mb-0"><i class="fas fa-medal text-warning"></i> Mis Medallas</h5>
+                                <span class="badge bg-glass-blue">Colección</span>
+                            </div>
+                            <div class="card-body">
+                                <div id="studentMedalsGrid" class="row g-3">
+                                    <!-- Dinámico -->
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Historial de Actividad -->
+                        <div class="card border-0">
+                            <div class="card-header bg-transparent border-0">
+                                <h5 class="hero-title mb-0"><i class="fas fa-history text-info"></i> Mis Últimas Hazañas</h5>
+                            </div>
+                            <div class="card-body p-0">
+                                <ul class="list-group list-group-flush bg-transparent" id="studentHistoryList">
+                                    <!-- Dinámico -->
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
 
             <!-- SECCIÓN: CENTRO DE GESTIÓN (TABS) -->
             <section id="managementSection" class="content-section" style="display: none;">

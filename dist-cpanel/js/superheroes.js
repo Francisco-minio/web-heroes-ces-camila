@@ -7,7 +7,17 @@ let currentUser = null;
 let currentSystemConfig = null;
 let isAuthenticated = false;
 
-const API_PATH = 'api/'; // Fuente única de verdad para cPanel
+const API_PATH = 'api/'; 
+
+// Catálogo Visual
+const AVAILABLE_AVATARS = ['🦸', '🦹', '🐉', '⚡', '🌪️', '🛡️', '🧙', '🧚', '🦸‍♀️', '🦹‍♀️', '🔥', '💫', '🌟', '💪', '🧠', '❤️'];
+const AVAILABLE_EMOJIS = ['⭐', '🔥', '💪', '🧠', '❤️', '🌈', '🎯', '🎨', '🌍', '🚀', '🔬', '📚', '🎭', '🏆', '🎪', '🎨'];
+const AVAILABLE_MEDALS = [
+    { id: 1, name: 'Medalla de Oro', icon: '🥇', description: 'Excelente rendimiento' },
+    { id: 2, name: 'Medalla de Plata', icon: '🥈', description: 'Buena participación' },
+    { id: 3, name: 'Medalla de Bronce', icon: '🥉', description: 'Esfuerzo constante' },
+    { id: 4, name: 'Estrella de Honor', icon: '⭐', description: 'Liderazgo' }
+];
 
 // API Engine - Abstracción para Backend PHP/MySQL
 const heroAPI = {
@@ -59,29 +69,18 @@ const ADMIN_CREDENTIALS = {
 
 // Inicialización
 document.addEventListener('DOMContentLoaded', async function() {
-    loadFromLocalStorage();
     await syncWithBackend();
     checkAuthentication();
     initializeApp();
     updateStats();
     populateHeroesTable();
-    populatePointsHistory();
     populateAvatarSelection();
     populateEmojiSelector();
-    populateCourseDropdowns(); // <-- Añadido
+    populateCourseDropdowns();
     setupEventListeners();
-
-    // Sincronizar datos y actualizar dashboard si es necesario
-    await syncWithBackend();
-    updateDashboard();
-
-    // Toggle sidebar móvil
-    const sidebarToggle = document.getElementById('sidebarToggle');
-    if (sidebarToggle) {
-        sidebarToggle.addEventListener('click', () => {
-            document.getElementById('sidebar').classList.toggle('show');
-        });
-    }
+    
+    if (currentView === 'student') updateStudentView();
+    else updateDashboard();
 });
 
 // Sincronizar datos con el backend (PHP)
@@ -133,27 +132,14 @@ function showAuthModal() {
     document.getElementById('studentView').style.display = 'none';
 }
 
-// Autenticar usuario
-function authenticate() {
-    const username = document.getElementById('username').value;
-    const password = document.getElementById('password').value;
-
-    if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
-        isAuthenticated = true;
-        safeStorage.setItem('isAuthenticated', 'true');
-
-
-        const authModal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
-        authModal.hide();
-
-        showAdminDashboard();
-// Autenticación de Profesor
+// Autenticar Profesor
 function authenticate() {
     const user = document.getElementById('username').value;
     const pass = document.getElementById('password').value;
 
     if (user === ADMIN_CREDENTIALS.username && pass === ADMIN_CREDENTIALS.password) {
         isAuthenticated = true;
+        safeStorage.setItem('isAuthenticated', 'true');
         showAdminDashboard();
         showSuccessAnimation('¡Comando Central Activado!');
         const modal = bootstrap.Modal.getInstance(document.getElementById('authModal'));
@@ -181,6 +167,10 @@ function showStudentView() {
 
 function logout() {
     if (confirm('¿Cerrar sesión en el Comando Central?')) {
+        isAuthenticated = false;
+        safeStorage.setItem('isAuthenticated', 'false');
+        safeStorage.removeItem('currentHeroId');
+        currentUser = null;
         window.location.reload();
     }
 }
@@ -483,65 +473,114 @@ function populatePointsHistory() {
     });
 }
 
-// Poblar selección de avatares
+// --- DINAMISMO Y VISTAS ---
+
 function populateAvatarSelection() {
     const container = document.getElementById('avatarSelection');
+    if (!container) return;
     container.innerHTML = '';
-
-    availableAvatars.forEach(avatar => {
-        const avatarDiv = document.createElement('div');
-        avatarDiv.className = 'avatar-option';
-        avatarDiv.innerHTML = avatar;
-        avatarDiv.onclick = function() {
+    AVAILABLE_AVATARS.forEach(avatar => {
+        const div = document.createElement('div');
+        div.className = 'avatar-option';
+        div.innerHTML = avatar;
+        div.onclick = () => {
             document.querySelectorAll('.avatar-option').forEach(el => el.classList.remove('selected'));
-            this.classList.add('selected');
+            div.classList.add('selected');
+            document.getElementById('heroAvatarDisplay').textContent = avatar;
         };
-        container.appendChild(avatarDiv);
+        container.appendChild(div);
     });
+}
+
+function updateStudentView() {
+    if (!currentUser) return;
+    
+    document.getElementById('studentHeroName').textContent = currentUser.heroName;
+    document.getElementById('studentAvatar').textContent = currentUser.avatar || '🦸';
+    document.getElementById('studentPoints').textContent = currentUser.points || 0;
+    
+    // Contar medallas (extraer del historial de puntos)
+    let medals = [];
+    if (currentUser.pointsHistory) {
+        medals = currentUser.pointsHistory.filter(h => h.reason.includes('Medalla'));
+    }
+    document.getElementById('studentMedalsCount').textContent = medals.length;
+
+    // Mostrar Medallas en Grid
+    const medalsGrid = document.getElementById('studentMedalsGrid');
+    if (medalsGrid) {
+        medalsGrid.innerHTML = '';
+        if (medals.length === 0) {
+            medalsGrid.innerHTML = '<div class="col-12 text-center p-4 text-muted small">Aún no has ganado medallas. ¡Sigue esforzándote!</div>';
+        } else {
+            medals.forEach(m => {
+                const col = document.createElement('div');
+                col.className = 'col-md-3 col-6';
+                col.innerHTML = `
+                    <div class="medal-card-mini p-2 text-center">
+                        <div class="fs-2">${m.reason.split(' ').pop()}</div>
+                        <div class="xsmall fw-bold text-truncate">${m.reason.replace('Medalla Otorgada: ', '')}</div>
+                    </div>
+                `;
+                medalsGrid.appendChild(col);
+            });
+        }
+    }
+    
+    // Historial del estudiante
+    const historyList = document.getElementById('studentHistoryList');
+    if (historyList && currentUser.pointsHistory) {
+        historyList.innerHTML = '';
+        currentUser.pointsHistory.slice(-5).reverse().forEach(entry => {
+            const li = document.createElement('li');
+            li.className = 'list-group-item bg-transparent text-white border-0 border-bottom border-secondary-subtle py-2';
+            li.innerHTML = `
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="small fw-bold">${entry.reason}</div>
+                        <div class="xsmall text-muted">${new Date(entry.date).toLocaleDateString()}</div>
+                    </div>
+                    <div class="badge bg-glass-blue text-info">${entry.points > 0 ? '+' : ''}${entry.points} ⚡</div>
+                </div>
+            `;
+            historyList.appendChild(li);
+        });
+    }
 }
 
 // Poblar selector de emojis
 function populateEmojiSelector() {
     const container = document.getElementById('emojiSelector');
+    if (!container) return;
     container.innerHTML = '';
 
-    availableEmojis.forEach(emoji => {
+    AVAILABLE_EMOJIS.forEach(emoji => {
         const btn = document.createElement('button');
         btn.className = 'emoji-btn';
         btn.innerHTML = emoji;
         btn.onclick = function() {
             this.classList.toggle('selected');
-            updateStudentEmojis();
         };
         container.appendChild(btn);
     });
 }
 
-// Poblar biblioteca de iconos
-function populateIconsLibrary() {
-    const container = document.getElementById('iconsLibrary');
-    container.innerHTML = '';
-
-    [...availableAvatars, ...availableEmojis].forEach(icon => {
-        const iconCard = document.createElement('div');
-        iconCard.className = 'col-md-2 col-sm-3 col-4 mb-3';
-        iconCard.innerHTML = `
-            <div class="card text-center p-3">
+// Poblar medallas disponibles
+function populateMedalsGrid() {
+    const grid = document.getElementById('availableMedalsGrid');
+    if (!grid) return;
+    grid.innerHTML = '';
+    AVAILABLE_MEDALS.forEach(medal => {
+        const col = document.createElement('div');
+        col.className = 'col-6';
+        col.innerHTML = `
+            <div class="medal-card p-3 text-center" onclick="awardMedalAction(${medal.id})">
+                <div class="fs-2">${medal.icon}</div>
+                <div class="small fw-bold">${medal.name}</div>
             </div>
         `;
-
-        medalCard.querySelector('.medal-option').onclick = function() {
-            document.querySelectorAll('.medal-option').forEach(el => {
-                el.style.borderColor = 'transparent';
-            });
-            this.style.borderColor = '#FFD700';
-        };
-
-        medalSelection.appendChild(medalCard);
+        grid.appendChild(col);
     });
-
-    // Poblar historial de medallas entregadas
-    populateMedalsHistory();
 }
 
 // Las funciones de gestión ya están definidas arriba
